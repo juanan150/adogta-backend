@@ -10,7 +10,7 @@ const listPets = async (req, res, next) => {
   }
 };
 
-const destroy = async (req, res, next) => {
+const destroyPet = async (req, res, next) => {
   //testing delete option
   try {
     await Pet.deleteOne({ _id: req.params.id });
@@ -23,6 +23,6 @@ const destroy = async (req, res, next) => {
 };
 
 module.exports = {
-  destroy,
+  destroyPet,
   listPets,
 };
