@@ -16,12 +16,7 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
-//test
-app.get("/", (request, response) => {
-  response.send("uno, dos, tres...");
-});
-
-//test
+//routes that will be used
 app.use(routes);
 
 //manage errors

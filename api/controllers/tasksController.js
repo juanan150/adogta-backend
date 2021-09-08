@@ -3,7 +3,7 @@ mongoose = require("mongoose");
 
 const listPets = async (req, res, next) => {
   try {
-    const pets = await Pet.find({ foundation_id: req.params.id });
+    const pets = await Pet.find({ foundationId: req.params.id });
     res.status(200).json(pets);
   } catch (e) {
     return next(e);
@@ -11,7 +11,6 @@ const listPets = async (req, res, next) => {
 };
 
 const destroyPet = async (req, res, next) => {
-  //testing delete option
   try {
     await Pet.deleteOne({ _id: req.params.id });
     res.status(204).end();
