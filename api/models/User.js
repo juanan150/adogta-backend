@@ -11,7 +11,7 @@ const userSchema = mongoose.Schema({
         const user = await User.findOne({ email: value });
         return user === null;
       },
-      message: "Email is already taken ",
+      message: "Email is already taken",
     },
   },
   password: {

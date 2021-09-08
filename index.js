@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const routes = require("./api/routers/index");
 
 const config = require("./config");
-const api = require("./api");
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +16,7 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
+app.use(routes);
 //test
 app.get("/", (request, response) => {
   response.send("uno, dos, tres...");
