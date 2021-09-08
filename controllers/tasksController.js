@@ -7,7 +7,7 @@ const destroy = async (req, res, next) => {
     await Pet.deleteOne({ _id: req.params.id });
     res.status(204).end();
   } catch (e) {
-    next(e);
+    return next(e);
   } finally {
     mongoose.disconnect();
   }

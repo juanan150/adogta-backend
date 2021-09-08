@@ -18,12 +18,13 @@ const petSchema = mongoose.Schema({
     required: true,
   },
   foundationId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Foundation",
     required: true,
   },
   adopted: {
     type: Boolean,
-    required: true,
+    default: false,
   },
 });
 
