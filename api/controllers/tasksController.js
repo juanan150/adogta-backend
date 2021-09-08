@@ -10,14 +10,12 @@ const listPets = async (req, res, next) => {
   }
 };
 
-const destroyPets = async (req, res, next) => {
+const destroyPet = async (req, res, next) => {
   try {
     await Pet.deleteOne({ _id: req.params.id });
     res.status(204).end();
   } catch (e) {
     return next(e);
-  } finally {
-    //mongoose.disconnect();
   }
 };
 
@@ -39,7 +37,7 @@ const createPet = async (req, res, next) => {
 };
 
 module.exports = {
-  destroyPets,
+  destroyPet,
   listPets,
   createPet,
 };
