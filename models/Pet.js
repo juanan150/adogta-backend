@@ -18,8 +18,7 @@ const petSchema = mongoose.Schema({
     required: true,
   },
   foundation_id: {
-    //type: mongoose.Schema.Types.ObjectId,
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Foundation",
     required: true,
   },
