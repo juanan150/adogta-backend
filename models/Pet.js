@@ -9,7 +9,7 @@ const petSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  photoUrl: {
+  photo_url: {
     type: String,
     required: true,
   },
@@ -17,8 +17,9 @@ const petSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  foundationId: {
-    type: mongoose.Schema.Types.ObjectId,
+  foundation_id: {
+    //type: mongoose.Schema.Types.ObjectId,
+    type: Number,
     ref: "Foundation",
     required: true,
   },

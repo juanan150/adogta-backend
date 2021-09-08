@@ -1,6 +1,15 @@
 Pet = require("../models/Pet");
 mongoose = require("mongoose");
 
+const listPets = async (req, res, next) => {
+  try {
+    const pets = await Pet.find({ foundation_id: req.params.id });
+    res.status(200).json(pets);
+  } catch (e) {
+    return next(e);
+  }
+};
+
 const destroy = async (req, res, next) => {
   //testing delete option
   try {
@@ -9,10 +18,11 @@ const destroy = async (req, res, next) => {
   } catch (e) {
     return next(e);
   } finally {
-    mongoose.disconnect();
+    //mongoose.disconnect();
   }
 };
 
 module.exports = {
   destroy,
+  listPets,
 };
