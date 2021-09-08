@@ -8,8 +8,6 @@ const destroyPet = async (req, res, next) => {
     res.status(204).end();
   } catch (e) {
     return next(e);
-  } finally {
-    mongoose.disconnect();
   }
 };
 
