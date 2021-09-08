@@ -5,14 +5,18 @@ const cors = require("cors");
 const app = express();
 
 const routes = require("./api/routers/routes");
-const config = require("./api/config");
+const config = require("./config");
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(config.dbConnectionString);
+mongoose.connect(config.dbConnectionString, console.log("Connected to db"));
 
-//test
+mongoose.connection.on("error", function (e) {
+  console.error(e);
+});
+
+//routes that will be used
 app.use(routes);
 
 //manage errors

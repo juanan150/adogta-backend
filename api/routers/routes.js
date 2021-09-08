@@ -1,9 +1,9 @@
 const express = require("express");
 
-const tasksController = require("../controllers/tasksController");
+const controllers = require("../controllers/controllers");
 
 const app = express.Router();
 
-app.delete("/pets/:id", tasksController.destroyPet);
+app.delete("/pets/:id", controllers.destroyPet);
 
 module.exports = app;
