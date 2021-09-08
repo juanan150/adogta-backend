@@ -24,9 +24,9 @@ const createPet = async (req, res, next) => {
     data = {
       name: req.body.name,
       description: req.body.description,
-      photo_url: req.body.photo_url,
+      photoUrl: req.body.photoUrl,
       age: req.body.age,
-      foundation_id: req.params.foundationId,
+      foundationId: req.params.foundationId,
     };
     const pet = new Pet(data);
     await pet.save();
