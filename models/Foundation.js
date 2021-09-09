@@ -52,7 +52,7 @@ foundationSchema.statics.authenticate = async (email, password) => {
   const foundation = await Foundation.findOne({ email });
   if (foundation) {
     const result = await bcrypt.compare(password, foundation.password);
-    return result === true ? user : null;
+    return result === true ? foundation : null;
   }
 
   return null;
