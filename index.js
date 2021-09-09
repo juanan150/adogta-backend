@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
-const routes = require("./api/routers/routes");
+const routes = require("./routers/routes");
 const config = require("./config");
 
 app.use(cors());
@@ -16,12 +16,7 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
-//test
-app.get("/", (request, response) => {
-  response.send("uno, dos, tres...");
-});
-
-//test
+//routes that will be used
 app.use(routes);
 
 //manage errors
@@ -30,5 +25,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(config.port, () => {
-  console.log("Servidor iniciado ...");
+  console.log("Server started ...");
 });

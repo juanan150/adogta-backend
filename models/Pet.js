@@ -3,21 +3,22 @@ const mongoose = require("mongoose");
 const petSchema = mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: [true, "Name is required"],
   },
   description: {
     type: String,
-    required: true,
+    required: [true, "A description is required"],
   },
-  photo_url: {
-    type: String,
-    required: true,
+  photoUrl: {
+    //Pendiente con cloudinary
+    type: Array,
+    required: [true, "A description is required"],
   },
   age: {
     type: Number,
     required: true,
   },
-  foundation_id: {
+  foundationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Foundation",
     required: true,
