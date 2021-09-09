@@ -1,6 +1,6 @@
 require("dotenv").config();
 const usersRouter = require("./routers/users.routes");
-const foundationsRouter = require("./routers/foundations.routes");
+
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
@@ -14,7 +14,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use(usersRouter);
-app.use(foundationsRouter);
 
 mongoose.connect(config.dbConnectionString, console.log("Connected to db"));
 
