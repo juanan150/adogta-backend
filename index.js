@@ -5,7 +5,6 @@ const cors = require("cors");
 const app = express();
 
 const config = require("./config");
-const api = require("./api");
 
 app.use(cors());
 app.use(express.json());
