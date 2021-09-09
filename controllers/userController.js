@@ -1,4 +1,5 @@
 const User = require("../api/models/User");
+const Foundation = require("../api/models/Foundation");
 var jwt = require("jsonwebtoken");
 
 const login = async (req, res) => {
