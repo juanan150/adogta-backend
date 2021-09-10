@@ -9,7 +9,7 @@ const login = async (req, res) => {
   let user = await User.authenticate(email, password);
 
   if (user) {
-    const token = jwt.sign({ userId: user._id }, "secret key");
+    const token = jwt.sign({ userId: user._id }, config.jwtKey);
     res.json({ token, user });
   } else {
     user = await Foundation.authenticate(email, password);

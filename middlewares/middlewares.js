@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 const User = require("../api/models/User");
 const Foundation = require("../api/models/Foundation");
+const config = require("../config/index");
 
 const auth = async (req, res, next) => {
   try {
     const token = req.get("Authorization");
-    const data = jwt.verify(token, "secret key");
+    const data = jwt.verify(token, config.jwtKey);
 
     let user = await User.findOne({ _id: data.userId });
 
