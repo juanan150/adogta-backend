@@ -53,4 +53,23 @@ const getUser = async (req, res, next) => {
   }
 };
 
-module.exports = { createUser, getUser };
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  let user = await User.authenticate(email, password);
+
+  if (user) {
+    const token = jwt.sign({ userId: user._id }, config.jwtKey);
+    res.json({ token, user });
+  } else {
+    user = await Foundation.authenticate(email, password);
+    if (user) {
+      const token = jwt.sign({ userId: user._id }, config.jwtKey);
+      res.json({ token, user });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  }
+};
+
+module.exports = { createUser, getUser, login };
