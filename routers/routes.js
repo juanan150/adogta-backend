@@ -1,9 +1,9 @@
-const express = require("express")
+const express = require("express");
 
-const controllers = require("../controllers/controllers")
+const controllers = require("../controllers/controllers");
 
-const app = express.Router()
+const app = express.Router();
 
-app.get("/foundations", controllers.listFoundations)
+app.get("/foundations", controllers.listFoundations);
 
-module.exports = app
+module.exports = app;
