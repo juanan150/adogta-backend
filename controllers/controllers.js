@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Foundation = require("../models/Foundation");
+const jwt = require("jsonwebtoken");
+const config = require("../config/index");
 
 const createUser = async (req, res, next) => {
   console.log(req.body.role);
