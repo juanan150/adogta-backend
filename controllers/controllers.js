@@ -36,7 +36,28 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const getPet = async (req, res, next) => {
+  try {
+    const pet = await Pet.findOne({ _id: req.params.petId });
+    res.status(200).json(pet);
+  } catch (e) {
+    next(e);
+  }
+};
+
 const listRequests = async (req, res, next) => {
+  try {
+    //const ObjectId = require("mongoose").Types.ObjectId;
+    const requests = await AdoptionRequest.find({
+      petId: req.params.petId,
+    });
+    res.status(200).json(requests);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const updateRequest = async (req, res, next) => {
   try {
     //const ObjectId = require("mongoose").Types.ObjectId;
     const requests = await AdoptionRequest.find({
@@ -53,4 +74,6 @@ module.exports = {
   listPets,
   createPet,
   listRequests,
+  updateRequest,
+  getPet,
 };
