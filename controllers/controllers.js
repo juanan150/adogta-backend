@@ -1,5 +1,5 @@
-Pet = require("../models/Pet");
-mongoose = require("mongoose");
+const Pet = require("../models/Pet");
+const AdoptionRequest = require("../models/AdoptionRequest");
 
 const listPets = async (req, res, next) => {
   try {
@@ -36,8 +36,21 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const listRequests = async (req, res, next) => {
+  try {
+    //const ObjectId = require("mongoose").Types.ObjectId;
+    const requests = await AdoptionRequest.find({
+      petId: req.params.petId,
+    });
+    res.status(200).json(requests);
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
   destroyPet,
   listPets,
   createPet,
+  listRequests,
 };
