@@ -7,6 +7,7 @@ const cors = require("cors");
 
 const app = express();
 
+const routes = require("./routers/routes");
 const config = require("./config");
 
 app.use(cors());
@@ -19,6 +20,11 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
+//manage errors
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message });
+});
+
 app.listen(config.port, () => {
-  console.log("Servidor iniciado ...");
+  console.log("Server started ...");
 });
