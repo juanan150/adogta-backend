@@ -1,5 +1,6 @@
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const mongoose = require("mongoose");
 
 const listPets = async (req, res, next) => {
   try {
@@ -47,11 +48,18 @@ const getPet = async (req, res, next) => {
 
 const listRequests = async (req, res, next) => {
   try {
-    //const ObjectId = require("mongoose").Types.ObjectId;
-    const requests = await AdoptionRequest.find({
-      petId: req.params.petId,
-    });
-    res.status(200).json(requests);
+    response = await AdoptionRequest.aggregate([
+      { $match: { petId: mongoose.Types.ObjectId(req.params.petId) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+    ]).exec();
+    res.status(200).json(response);
   } catch (e) {
     next(e);
   }
