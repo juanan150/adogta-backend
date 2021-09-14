@@ -3,8 +3,6 @@ const Foundation = require("../models/Foundation");
 
 const createUser = async (req, res, next) => {
   try {
-    console.log("User", User);
-    console.log("Foundation", Foundation);
     let newUser;
     if (req.body.role === "user") {
       newUser = await new User(req.body);

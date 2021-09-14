@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Foundation = require("./Foundation");
 const bcrypt = require("bcrypt");
 
 const userSchema = mongoose.Schema({
@@ -10,7 +9,9 @@ const userSchema = mongoose.Schema({
     validate: {
       validator: async function (value) {
         const user = await User.findOne({ email: value });
-        const foundation = await Foundation.findOne({ email: value });
+        const foundation = await mongoose
+          .model("Foundation")
+          .findOne({ email: value });
         if (user) {
           return user === null;
         } else if (user === foundation) {
