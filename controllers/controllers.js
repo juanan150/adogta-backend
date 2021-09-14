@@ -22,4 +22,9 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login };
+const loadUser = async (req, res) => {
+  const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user;
+  res.json({ name, email, address, phoneNumber, role, photoUrl });
+};
+
+module.exports = { login, loadUser };
