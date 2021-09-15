@@ -29,7 +29,6 @@ const foundationSchema = mongoose.Schema({
     type: String,
   },
   role: {
-    default: "foundation",
     type: String,
     required: [true, " Role is required"],
   },

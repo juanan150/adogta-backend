@@ -1,11 +1,12 @@
 const express = require("express");
-
 const controllers = require("../controllers/controllers");
-
+const { auth } = require("../middlewares/middlewares");
 const app = express.Router();
 
-app.delete("/pets/:id", controllers.destroyPet);
-app.get("/foundations/:id/pets", controllers.listPets);
+app.get("/me", auth, controllers.loadUser);
+app.post("/login", controllers.login);
+app.delete("/pets/:id", auth, controllers.destroyPet);
+app.get("/foundations/:id/pets", auth, controllers.listPets);
 app.get("/foundations/:id/requests", controllers.listFoundationRequests);
 app.post("/foundations/:foundationId/pets", controllers.createPet);
 app.get("/pets/:petId", controllers.getPet);
