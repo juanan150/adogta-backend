@@ -24,19 +24,4 @@ const createUser = async (req, res, next) => {
   }
 };
 
-const getUser = async (req, res, next) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    res.status(201).json(user);
-  } catch (err) {
-    if (err.name === "ValidationError") {
-      console.log("Validation Error:", err.errors);
-      res.status(422).json(err.errors);
-    } else {
-      next(err);
-      console.log(err);
-    }
-  }
-};
-
-module.exports = { createUser, getUser };
+module.exports = { createUser };

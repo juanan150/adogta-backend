@@ -9,14 +9,13 @@ const config = require("./config");
 
 app.use(cors());
 app.use(express.json());
+app.use(routes);
 
 mongoose.connect(config.dbConnectionString, console.log("Connected to db"));
 
 mongoose.connection.on("error", function (e) {
   console.error(e);
 });
-
-app.use(routes);
 
 app.listen(config.port, () => {
   console.log("Servidor iniciado ...");
