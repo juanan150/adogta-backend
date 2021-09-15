@@ -1,9 +1,8 @@
 const User = require("../models/User");
 const Foundation = require("../models/Foundation");
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const config = require("../config/index");
-Pet = require("../models/Pet");
-mongoose = require("mongoose");
+const Pet = require("../models/Pet");
 
 const login = async (req, res) => {
   const { email, password } = req.body;
