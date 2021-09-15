@@ -19,6 +19,11 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
+//manage errors
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message });
+});
+
 app.listen(config.port, () => {
-  console.log("Servidor iniciado ...");
+  console.log("Server started ...");
 });
