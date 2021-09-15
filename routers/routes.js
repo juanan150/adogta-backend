@@ -5,8 +5,8 @@ const app = express.Router();
 
 app.get("/me", auth, controllers.loadUser);
 app.post("/login", controllers.login);
-app.delete("/pets/:id", controllers.destroyPet);
+app.delete("/pets/:id", auth, controllers.destroyPet);
 app.get("/foundations/:id/pets", auth, controllers.listPets);
-app.post("/foundations/:foundationId/pets", controllers.createPet);
+app.post("/foundations/:foundationId/pets", auth, controllers.createPet);
 
 module.exports = app;
