@@ -1,6 +1,8 @@
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const User = require("../models/User");
+const Foundation = require("../models/Foundation");
+const mongoose = require("mongoose");
 
 const listPets = async (req, res, next) => {
   try {
@@ -75,6 +77,21 @@ const updateRequest = async (req, res, next) => {
   }
 };
 
+const listFoundationRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find().populate({
+      path: "petId",
+      model: Pet,
+    });
+    const reqs = response.filter(
+      (request) => request.petId.foundationId.toString() === req.params.id
+    );
+    res.status(200).json(reqs);
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
   destroyPet,
   listPets,
@@ -82,4 +99,5 @@ module.exports = {
   listRequests,
   updateRequest,
   getPet,
+  listFoundationRequests,
 };
