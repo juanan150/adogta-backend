@@ -24,8 +24,9 @@ const login = async (req, res) => {
 };
 
 const loadUser = async (req, res) => {
-  const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user;
-  res.json({ name, email, address, phoneNumber, role, photoUrl });
+  const { name, email, address, phoneNumber, role, photoUrl, _id } =
+    res.locals.user;
+  res.json({ name, email, address, phoneNumber, role, photoUrl, _id });
 };
 
 const listPets = async (req, res, next) => {
@@ -63,10 +64,47 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const updateProfile = async (req, res, next) => {
+  const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
+
+  data = {
+    name,
+    address,
+    phoneNumber,
+    email,
+    photoUrl,
+    _id,
+    role,
+  };
+
+  try {
+    if (role === "user") {
+      const user = await User.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    } else {
+      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    }
+  } catch (error) {
+    res.status(401).json({ error: "User not foundss" });
+  }
+};
+
 module.exports = {
   destroyPet,
   listPets,
   createPet,
   login,
   loadUser,
+  updateProfile,
 };
