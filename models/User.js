@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require("mongoose")
+const bcrypt = require("bcrypt")
 
 const userSchema = mongoose.Schema({
   email: {
@@ -8,8 +8,8 @@ const userSchema = mongoose.Schema({
     required: [true, "Email is required"],
     validate: {
       validator: async function (value) {
-        const user = await User.findOne({ email: value });
-        return user === null;
+        const user = await User.findOne({ email: value })
+        return user === null
       },
       message: "Email is already taken ",
     },
@@ -35,28 +35,28 @@ const userSchema = mongoose.Schema({
   photoUrl: {
     type: String,
   },
-});
+})
 
 userSchema.pre("save", async function (next) {
   try {
-    const hash = await bcrypt.hash(this.password, 10);
-    this.password = hash;
-    next();
+    const hash = await bcrypt.hash(this.password, 10)
+    this.password = hash
+    next()
   } catch (err) {
-    next(err);
+    next(err)
   }
-});
+})
 
 userSchema.statics.authenticate = async (email, password) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email })
   if (user) {
-    const result = await bcrypt.compare(password, user.password);
-    return result === true ? user : null;
+    const result = await bcrypt.compare(password, user.password)
+    return result === true ? user : null
   }
 
-  return null;
-};
+  return null
+}
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema)
 
-module.exports = User;
+module.exports = User
