@@ -33,12 +33,12 @@ const createRequest = async (req, res, next) => {
     const user = await User.findById(req.body.userId);
     const pet = await Pet.findById(req.body.petId);
 
-    const allAdoptions = await AdoptionRequest.find({
+    const sameAdoptions = await AdoptionRequest.find({
       userId: req.body.userId,
       petId: req.body.petId,
     });
 
-    if (allAdoptions.length >= 1) {
+    if (sameAdoptions.length >= 1) {
       return res
         .status(422)
         .json({ error: "You have already sent a request to adopt this pet" });
