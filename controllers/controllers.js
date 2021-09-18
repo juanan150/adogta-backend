@@ -56,7 +56,7 @@ const createRequest = async (req, res, next) => {
           address: req.body.address,
         }
       );
-      res.status(200).json(request, user, pet);
+      res.status(200).json({ request, user, pet });
     }
   } catch (err) {
     if (err.name === "ValidationError") {
