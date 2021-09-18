@@ -30,21 +30,23 @@ const createUser = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
   try {
-    const user = await User.findById(req.body.userId);
+    // const user = await User.findById(req.body.userId);
     const pet = await Pet.findById(req.body.petId);
+    const { _id } = res.locals.user;
+    console.log(_id.toString());
 
     const sameAdoptions = await AdoptionRequest.find({
-      userId: req.body.userId,
+      userId: _id,
       petId: req.body.petId,
     });
 
     if (sameAdoptions.length >= 1) {
       return res
         .status(422)
-        .json({ error: "You have already sent a request to adopt this pet" });
+        .json({ err: "You have already sent a request to adopt this pet" });
     } else {
       const request = await AdoptionRequest.create({
-        userId: req.body.userId,
+        userId: _id,
         petId: req.body.petId,
         description: req.body.description,
       });
