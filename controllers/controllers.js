@@ -88,15 +88,26 @@ const login = async (req, res) => {
   }
 };
 
+const listFoundations = async (req, res, next) => {
+  try {
+    const foundations = await Foundation.find(
+      {},
+      { password: 0, __v: 0, role: 0 }
+    ).limit(10);
+    res.status(200).json(foundations);
+  } catch (e) {
+    return next(e);
+  }
+};
+
 const loadUser = async (req, res) => {
-  const { _id, name, email, address, phoneNumber, role, photoUrl } =
-    res.locals.user;
-  res.json({ _id, name, email, address, phoneNumber, role, photoUrl });
+  const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user;
+  res.json({ name, email, address, phoneNumber, role, photoUrl });
 };
 
 const listPets = async (req, res, next) => {
   try {
-    const pets = await Pet.find({ foundationId: req.params.foundationId });
+    const pets = await Pet.find({ foundationId: req.params.id });
     res.status(200).json(pets);
   } catch (e) {
     next(e);
@@ -105,7 +116,7 @@ const listPets = async (req, res, next) => {
 
 const destroyPet = async (req, res, next) => {
   try {
-    await Pet.deleteOne({ _id: req.params.petId });
+    await Pet.deleteOne({ _id: req.params.id });
     res.status(204).end();
   } catch (e) {
     next(e);
@@ -182,6 +193,7 @@ const listFoundationRequests = async (req, res, next) => {
 };
 
 module.exports = {
+  listFoundations,
   destroyPet,
   listPets,
   createPet,

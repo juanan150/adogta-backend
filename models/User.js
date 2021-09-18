@@ -9,17 +9,9 @@ const userSchema = mongoose.Schema({
     validate: {
       validator: async function (value) {
         const user = await User.findOne({ email: value });
-        const foundation = await mongoose
-          .model("Foundation")
-          .findOne({ email: value });
-        if (user) {
-          return user === null;
-        } else if (user === foundation) {
-          return user === null;
-        }
-        return user;
+        return user === null;
       },
-      message: "Email is already taken",
+      message: "Email is already taken ",
     },
   },
   password: {
