@@ -3,11 +3,11 @@ const Foundation = require("../models/Foundation");
 const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
+const AdoptionRequest = require("../models/AdoptionRequest");
 
 const createUser = async (req, res, next) => {
   try {
     let newUser;
-    console.log(req.body);
     if (req.body.role === "user") {
       newUser = await new User(req.body);
       await newUser.save();
@@ -16,6 +16,47 @@ const createUser = async (req, res, next) => {
       newUser = await new Foundation(req.body);
       await newUser.save();
       res.status(201).json(newUser);
+    }
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      console.log("Validation Error:", err.errors);
+      res.status(422).json(err.errors);
+    } else {
+      next(err);
+      console.log(err);
+    }
+  }
+};
+
+const createRequest = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.body.userId);
+    const pet = await Pet.findById(req.body.petId);
+
+    const allAdoptions = await AdoptionRequest.find({
+      userId: req.body.userId,
+      petId: req.body.petId,
+    });
+
+    if (allAdoptions.length >= 1) {
+      return res
+        .status(422)
+        .json({ error: "You have already sent a request to adopt this pet" });
+    } else {
+      const request = await AdoptionRequest.create({
+        userId: req.body.userId,
+        petId: req.body.petId,
+        description: req.body.description,
+      });
+
+      await User.updateOne(
+        { _id: req.body.userId },
+        {
+          phoneNumber: req.body.phoneNumber,
+          address: req.body.address,
+        }
+      );
+      res.status(200).json(request, user, pet);
     }
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -48,13 +89,14 @@ const login = async (req, res) => {
 };
 
 const loadUser = async (req, res) => {
-  const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user;
-  res.json({ name, email, address, phoneNumber, role, photoUrl });
+  const { _id, name, email, address, phoneNumber, role, photoUrl } =
+    res.locals.user;
+  res.json({ _id, name, email, address, phoneNumber, role, photoUrl });
 };
 
 const listPets = async (req, res, next) => {
   try {
-    const pets = await Pet.find({ foundationId: req.params.id });
+    const pets = await Pet.find({ foundationId: req.params.foundationId });
     res.status(200).json(pets);
   } catch (e) {
     next(e);
@@ -63,7 +105,7 @@ const listPets = async (req, res, next) => {
 
 const destroyPet = async (req, res, next) => {
   try {
-    await Pet.deleteOne({ _id: req.params.id });
+    await Pet.deleteOne({ _id: req.params.petId });
     res.status(204).end();
   } catch (e) {
     next(e);
@@ -87,11 +129,68 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const getPet = async (req, res, next) => {
+  try {
+    const pet = await Pet.findOne({ _id: req.params.petId });
+    res.status(200).json(pet);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const listRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find({
+      petId: req.params.petId,
+    }).populate("userId");
+    res.status(200).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const updateRequest = async (req, res, next) => {
+  try {
+    const request = await AdoptionRequest.findOneAndUpdate(
+      {
+        _id: req.params.requestId,
+      },
+      {
+        responseStatus: req.body.responseStatus,
+      },
+      { new: true }
+    );
+    res.status(200).json(request);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const listFoundationRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find().populate({
+      path: "petId",
+      model: Pet,
+    });
+    const reqs = response.filter(
+      (request) => request.petId.foundationId.toString() === req.params.id
+    );
+    res.status(200).json(reqs);
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
   destroyPet,
   listPets,
   createPet,
+  listRequests,
+  updateRequest,
+  getPet,
+  listFoundationRequests,
   createUser,
   login,
   loadUser,
+  createRequest,
 };

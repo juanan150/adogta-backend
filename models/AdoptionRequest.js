@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Pet = require("./Pet");
 
 const adoptionRequestSchema = mongoose.Schema({
   userId: {
@@ -22,7 +23,7 @@ const adoptionRequestSchema = mongoose.Schema({
 });
 
 const AdoptionRequest = mongoose.model(
-  "AdoptionRequest",
+  "adoptionrequests",
   adoptionRequestSchema
 );
 
