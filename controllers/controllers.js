@@ -30,10 +30,7 @@ const createUser = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
   try {
-    // const user = await User.findById(req.body.userId);
-    const pet = await Pet.findById(req.body.petId);
     const { _id } = res.locals.user;
-    console.log(_id.toString());
 
     const sameAdoptions = await AdoptionRequest.find({
       userId: _id,
@@ -43,7 +40,7 @@ const createRequest = async (req, res, next) => {
     if (sameAdoptions.length >= 1) {
       return res
         .status(422)
-        .json({ err: "You have already sent a request to adopt this pet" });
+        .json({ error: "You have already sent a request to adopt this pet" });
     } else {
       const request = await AdoptionRequest.create({
         userId: _id,
@@ -52,13 +49,13 @@ const createRequest = async (req, res, next) => {
       });
 
       await User.updateOne(
-        { _id: req.body.userId },
+        { _id: _id },
         {
           phoneNumber: req.body.phoneNumber,
           address: req.body.address,
         }
       );
-      res.status(200).json({ request, user, pet });
+      res.status(200).json({ request });
     }
   } catch (err) {
     if (err.name === "ValidationError") {
