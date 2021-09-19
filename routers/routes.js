@@ -9,5 +9,9 @@ app.delete("/pets/:id", auth, controllers.destroyPet)
 app.get("/foundations/:id/pets", auth, controllers.listPets)
 app.post("/foundations/:foundationId/pets", auth, controllers.createPet)
 app.get("/foundations", controllers.listFoundations)
+app.get("/admin", controllers.listFoundations)
+app.delete("/admin", controllers.deleteFoundation)
+app.get("/admin/users", controllers.listUsers)
+app.delete("/admin/users", controllers.deleteUsers)
 
 module.exports = app

@@ -35,6 +35,17 @@ const listFoundations = async (req, res, next) => {
   }
 }
 
+const listUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}, { password: 0, __v: 0, role: 0 }).limit(
+      10
+    )
+    res.status(200).json(users)
+  } catch (e) {
+    return next(e)
+  }
+}
+
 const loadUser = async (req, res) => {
   const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user
   res.json({ name, email, address, phoneNumber, role, photoUrl })
@@ -75,6 +86,26 @@ const createPet = async (req, res, next) => {
   }
 }
 
+const deleteFoundation = async (req, res, next) => {
+  try {
+    //await Foundation.deleteMany(req.body)
+    console.log("CALLING DELETING FOUNDATIONS, UNCOMMENT LINE")
+    res.status(204).end()
+  } catch (e) {
+    next(e)
+  }
+}
+
+const deleteUsers = async (req, res, next) => {
+  try {
+    //await User.deleteMany(req.body)
+    console.log("CALLING DELETING USER, UNCOMMENT LINE")
+    res.status(204).end()
+  } catch (e) {
+    next(e)
+  }
+}
+
 module.exports = {
   listFoundations,
   destroyPet,
@@ -82,4 +113,7 @@ module.exports = {
   createPet,
   login,
   loadUser,
+  deleteFoundation,
+  listUsers,
+  deleteUsers,
 }
