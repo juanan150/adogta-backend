@@ -12,15 +12,45 @@ const login = async (req, res) => {
 
   if (user) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    res.json({ token, user });
+    const { _id, name, email, role } = user;
+    res.json({ token, _id, name, email, role });
   } else {
     user = await Foundation.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
-      res.json({ token, user });
+      const { _id, name, email, role } = user;
+      res.json({ token, _id, email, name, role });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
+  }
+};
+
+const listFoundations = async (req, res, next) => {
+  try {
+    const page = req.query.page || 1;
+    const foundations = await Foundation.find(
+      {},
+      { password: 0, __v: 0, role: 0 },
+      { skip: (page - 1) * 5, limit: 5 }
+    );
+    res.status(200).json(foundations);
+  } catch (e) {
+    return next(e);
+  }
+};
+
+const listUsers = async (req, res, next) => {
+  try {
+    const page = req.query.page || 1;
+    const users = await User.find(
+      {},
+      { password: 0, __v: 0, role: 0 },
+      { skip: (page - 1) * 5, limit: 5 }
+    );
+    res.status(200).json(users);
+  } catch (e) {
+    return next(e);
   }
 };
 
@@ -74,6 +104,15 @@ const getPet = async (req, res, next) => {
   }
 };
 
+const deleteFoundation = async (req, res, next) => {
+  try {
+    await Foundation.deleteMany(req.body);
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
+
 const listRequests = async (req, res, next) => {
   try {
     response = await AdoptionRequest.find({
@@ -117,7 +156,17 @@ const listFoundationRequests = async (req, res, next) => {
   }
 };
 
+const deleteUsers = async (req, res, next) => {
+  try {
+    await User.deleteMany(req.body);
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
+  listFoundations,
   destroyPet,
   listPets,
   createPet,
@@ -127,4 +176,7 @@ module.exports = {
   listFoundationRequests,
   login,
   loadUser,
+  deleteFoundation,
+  listUsers,
+  deleteUsers,
 };
