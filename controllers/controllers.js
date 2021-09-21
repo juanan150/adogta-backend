@@ -62,8 +62,13 @@ const loadUser = async (req, res) => {
 
 const listPets = async (req, res, next) => {
   try {
-    const pets = await Pet.find({ foundationId: req.params.foundationId });
-    res.status(200).json(pets);
+    const page = req.query.page || 1;
+    const count = await Pet.count({ foundationId: req.params.id });
+    const pets = await Pet.find({ foundationId: req.params.id }, null, {
+      skip: (page - 1) * 10,
+      limit: 10,
+    });
+    res.status(200).json({ page, count, pets });
   } catch (e) {
     next(e);
   }
