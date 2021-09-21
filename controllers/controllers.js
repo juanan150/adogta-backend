@@ -7,16 +7,13 @@ const Pet = require("../models/Pet");
 const createUser = async (req, res, next) => {
   try {
     let newUser;
-    console.log(req.body);
-    if (req.body.role === "user" || req.body === "admin") {
+    if (req.body.role === "user" || req.body.role === "admin") {
       newUser = await new User(req.body);
-      await newUser.save();
-      res.status(201).json(newUser);
-    } else if (req.body.role === "foundation") {
+    } else {
       newUser = await new Foundation(req.body);
-      await newUser.save();
-      res.status(201).json(newUser);
     }
+    await newUser.save();
+    res.status(201).json(newUser);
   } catch (err) {
     if (err.name === "ValidationError") {
       console.log("Validation Error:", err.errors);
