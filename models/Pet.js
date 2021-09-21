@@ -12,7 +12,7 @@ const petSchema = mongoose.Schema({
   photoUrl: {
     //Pendiente con cloudinary
     type: Array,
-    required: [true, "A description is required"],
+    required: [false, "A description is required"],
   },
   age: {
     type: Number,

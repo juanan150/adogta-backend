@@ -22,7 +22,7 @@ const adoptionRequestSchema = mongoose.Schema({
 });
 
 const AdoptionRequest = mongoose.model(
-  "AdoptionRequest",
+  "adoptionrequests",
   adoptionRequestSchema
 );
 
