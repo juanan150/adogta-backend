@@ -9,7 +9,13 @@ const foundationSchema = mongoose.Schema({
     validate: {
       validator: async function (value) {
         const foundation = await Foundation.findOne({ email: value });
-        return foundation === null;
+        const user = await mongoose.model("User").findOne({ email: value });
+        if (foundation) {
+          return foundation === null;
+        } else if (foundation === user) {
+          return foundation === null;
+        }
+        return foundation;
       },
       message: "Email is already taken",
     },

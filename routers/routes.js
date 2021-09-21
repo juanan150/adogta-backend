@@ -17,5 +17,6 @@ app.get("/admin", authAdmin, controllers.listFoundations);
 app.delete("/admin", authAdmin, controllers.deleteFoundation);
 app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);
+app.post("/signup", controllers.createUser);
 
 module.exports = app;

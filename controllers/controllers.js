@@ -5,6 +5,27 @@ const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 
+const createUser = async (req, res, next) => {
+  try {
+    let newUser;
+    if (req.body.role === "user" || req.body.role === "admin") {
+      newUser = await new User(req.body);
+    } else {
+      newUser = await new Foundation(req.body);
+    }
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      console.log("Validation Error:", err.errors);
+      res.status(422).json(err.errors);
+    } else {
+      next(err);
+      console.log(err);
+    }
+  }
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -179,6 +200,7 @@ module.exports = {
   updateRequest,
   getPet,
   listFoundationRequests,
+  createUser,
   login,
   loadUser,
   deleteFoundation,
