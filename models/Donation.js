@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const donationSchema = mongoose.Schema({
   transactionId: {
@@ -13,8 +13,8 @@ const donationSchema = mongoose.Schema({
     ref: "Foundation",
     required: true,
   },
-})
+});
 
-const Donation = mongoose.model("Donation", donationSchema)
+const Donation = mongoose.model("Donation", donationSchema);
 
-module.exports = Donation
+module.exports = Donation;
