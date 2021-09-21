@@ -12,15 +12,29 @@ const login = async (req, res) => {
 
   if (user) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    res.json({ token, user });
+    const { _id, name, email, role } = user;
+    res.json({ token, _id, name, email, role });
   } else {
     user = await Foundation.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
-      res.json({ token, user });
+      const { _id, name, email, role } = user;
+      res.json({ token, _id, email, name, role });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
+  }
+};
+
+const listFoundations = async (req, res, next) => {
+  try {
+    const foundations = await Foundation.find(
+      {},
+      { password: 0, __v: 0, role: 0 }
+    ).limit(10);
+    res.status(200).json(foundations);
+  } catch (e) {
+    return next(e);
   }
 };
 
@@ -117,6 +131,7 @@ const listFoundationRequests = async (req, res, next) => {
 };
 
 module.exports = {
+  listFoundations,
   destroyPet,
   listPets,
   createPet,
