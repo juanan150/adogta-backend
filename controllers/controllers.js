@@ -161,6 +161,42 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const updateProfile = async (req, res, next) => {
+  const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
+
+  data = {
+    name,
+    address,
+    phoneNumber,
+    email,
+    photoUrl,
+    _id,
+    role,
+  };
+
+  try {
+    if (role === "user") {
+      const user = await User.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    } else {
+      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    }
+  } catch (error) {
+    res.status(401).json({ error: "User not foundss" });
+  }
+};
+
 const getPet = async (req, res, next) => {
   try {
     const pet = await Pet.findOne({ _id: req.params.petId });
@@ -214,7 +250,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -243,6 +279,7 @@ module.exports = {
   createUser,
   login,
   loadUser,
+  updateProfile,
   deleteFoundation,
   listUsers,
   deleteUsers,
