@@ -8,7 +8,7 @@ const createUser = async (req, res, next) => {
   try {
     let newUser;
     console.log(req.body);
-    if (req.body.role === "user") {
+    if (req.body.role === "user" || req.body === "admin") {
       newUser = await new User(req.body);
       await newUser.save();
       res.status(201).json(newUser);
