@@ -3,6 +3,7 @@ const Foundation = require("../models/Foundation");
 const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
+const AdoptionRequest = require("../models/AdoptionRequest");
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -77,11 +78,67 @@ const createPet = async (req, res, next) => {
   }
 };
 
+const getPet = async (req, res, next) => {
+  try {
+    const pet = await Pet.findOne({ _id: req.params.petId });
+    res.status(200).json(pet);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const listRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find({
+      petId: req.params.petId,
+    }).populate("userId");
+    res.status(200).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const updateRequest = async (req, res, next) => {
+  try {
+    const request = await AdoptionRequest.findOneAndUpdate(
+      {
+        _id: req.params.requestId,
+      },
+      {
+        responseStatus: req.body.responseStatus,
+      },
+      { new: true }
+    );
+    res.status(200).json(request);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const listFoundationRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find().populate({
+      path: "petId",
+      model: Pet,
+    });
+    const reqs = response.filter(
+      (request) => request.petId.foundationId.toString() === req.params.id
+    );
+    res.status(200).json(reqs);
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
   listFoundations,
   destroyPet,
   listPets,
   createPet,
+  listRequests,
+  updateRequest,
+  getPet,
+  listFoundationRequests,
   login,
   loadUser,
 };
