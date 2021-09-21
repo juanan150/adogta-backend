@@ -55,13 +55,14 @@ const listUsers = async (req, res, next) => {
 };
 
 const loadUser = async (req, res) => {
-  const { name, email, address, phoneNumber, role, photoUrl } = res.locals.user;
-  res.json({ name, email, address, phoneNumber, role, photoUrl });
+  const { _id, name, email, address, phoneNumber, role, photoUrl } =
+    res.locals.user;
+  res.json({ _id, name, email, address, phoneNumber, role, photoUrl });
 };
 
 const listPets = async (req, res, next) => {
   try {
-    const pets = await Pet.find({ foundationId: req.params.id });
+    const pets = await Pet.find({ foundationId: req.params.foundationId });
     res.status(200).json(pets);
   } catch (e) {
     next(e);
@@ -70,7 +71,7 @@ const listPets = async (req, res, next) => {
 
 const destroyPet = async (req, res, next) => {
   try {
-    await Pet.deleteOne({ _id: req.params.id });
+    await Pet.deleteOne({ _id: req.params.petId });
     res.status(204).end();
   } catch (e) {
     next(e);
