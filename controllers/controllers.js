@@ -26,6 +26,46 @@ const createUser = async (req, res, next) => {
   }
 };
 
+const createRequest = async (req, res, next) => {
+  try {
+    const { _id } = res.locals.user;
+
+    const sameAdoptions = await AdoptionRequest.find({
+      userId: _id,
+      petId: req.body.petId,
+    });
+
+    if (sameAdoptions.length >= 1) {
+      return res
+        .status(422)
+        .json({ error: "You have already sent a request to adopt this pet" });
+    } else {
+      const request = await AdoptionRequest.create({
+        userId: _id,
+        petId: req.body.petId,
+        description: req.body.description,
+      });
+
+      await User.updateOne(
+        { _id: _id },
+        {
+          phoneNumber: req.body.phoneNumber,
+          address: req.body.address,
+        }
+      );
+      res.status(200).json({ request });
+    }
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      console.log("Validation Error:", err.errors);
+      res.status(422).json(err.errors);
+    } else {
+      next(err);
+      console.log(err);
+    }
+  }
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -206,4 +246,5 @@ module.exports = {
   deleteFoundation,
   listUsers,
   deleteUsers,
+  createRequest,
 };
