@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const adoptionRequestSchema = mongoose.Schema({
   userId: {
@@ -19,8 +19,11 @@ const adoptionRequestSchema = mongoose.Schema({
     default: "pending",
     type: String,
   },
-})
+});
 
-const AdoptionRequest = mongoose.model("AdoptionRequest", adoptionRequestSchema)
+const AdoptionRequest = mongoose.model(
+  "AdoptionRequest",
+  adoptionRequestSchema
+);
 
-module.exports = AdoptionRequest
+module.exports = AdoptionRequest;

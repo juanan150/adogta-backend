@@ -1,5 +1,5 @@
-const mongoose = require("mongoose")
-const bcrypt = require("bcrypt")
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const foundationSchema = mongoose.Schema({
   email: {
@@ -8,8 +8,8 @@ const foundationSchema = mongoose.Schema({
     required: [true, "Email is required"],
     validate: {
       validator: async function (value) {
-        const foundation = await Foundation.findOne({ email: value })
-        return foundation === null
+        const foundation = await Foundation.findOne({ email: value });
+        return foundation === null;
       },
       message: "Email is already taken",
     },
@@ -35,28 +35,28 @@ const foundationSchema = mongoose.Schema({
   photoUrl: {
     type: String,
   },
-})
+});
 
 foundationSchema.pre("save", async function (next) {
   try {
-    const hash = await bcrypt.hash(this.password, 10)
-    this.password = hash
-    next()
+    const hash = await bcrypt.hash(this.password, 10);
+    this.password = hash;
+    next();
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
 foundationSchema.statics.authenticate = async (email, password) => {
-  const foundation = await Foundation.findOne({ email })
+  const foundation = await Foundation.findOne({ email });
   if (foundation) {
-    const result = await bcrypt.compare(password, foundation.password)
-    return result === true ? foundation : null
+    const result = await bcrypt.compare(password, foundation.password);
+    return result === true ? foundation : null;
   }
 
-  return null
-}
+  return null;
+};
 
-const Foundation = mongoose.model("Foundation", foundationSchema)
+const Foundation = mongoose.model("Foundation", foundationSchema);
 
-module.exports = Foundation
+module.exports = Foundation;
