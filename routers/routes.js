@@ -5,6 +5,7 @@ const app = express.Router();
 
 app.get("/me", auth, controllers.loadUser);
 app.post("/login", controllers.login);
+app.put("/:id/profile", auth, controllers.updateProfile);
 app.delete("/pets/:petId", auth, controllers.destroyPet);
 app.get("/foundations", auth, controllers.listFoundations);
 app.get("/foundations/:foundationId/pets", auth, controllers.listPets);
@@ -18,5 +19,7 @@ app.get("/admin", authAdmin, controllers.listFoundations);
 app.delete("/admin", authAdmin, controllers.deleteFoundation);
 app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);
+app.post("/signup", controllers.createUser);
+app.post("/pets/:petId/request", auth, controllers.createRequest);
 
 module.exports = app;

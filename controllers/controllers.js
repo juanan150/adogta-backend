@@ -5,6 +5,67 @@ const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 
+const createUser = async (req, res, next) => {
+  try {
+    let newUser;
+    if (req.body.role === "user" || req.body.role === "admin") {
+      newUser = await new User(req.body);
+    } else {
+      newUser = await new Foundation(req.body);
+    }
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      console.log("Validation Error:", err.errors);
+      res.status(422).json(err.errors);
+    } else {
+      next(err);
+      console.log(err);
+    }
+  }
+};
+
+const createRequest = async (req, res, next) => {
+  try {
+    const { _id } = res.locals.user;
+
+    const sameAdoptions = await AdoptionRequest.find({
+      userId: _id,
+      petId: req.body.petId,
+    });
+
+    if (sameAdoptions.length >= 1) {
+      return res
+        .status(422)
+        .json({ error: "You have already sent a request to adopt this pet" });
+    } else {
+      const request = await AdoptionRequest.create({
+        userId: _id,
+        petId: req.body.petId,
+        description: req.body.description,
+      });
+
+      await User.updateOne(
+        { _id: _id },
+        {
+          phoneNumber: req.body.phoneNumber,
+          address: req.body.address,
+        }
+      );
+      res.status(200).json({ request });
+    }
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      console.log("Validation Error:", err.errors);
+      res.status(422).json(err.errors);
+    } else {
+      next(err);
+      console.log(err);
+    }
+  }
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -101,6 +162,42 @@ const createPet = async (req, res, next) => {
     res.status(201).json(pet);
   } catch (e) {
     next(e);
+  }
+};
+
+const updateProfile = async (req, res, next) => {
+  const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
+
+  data = {
+    name,
+    address,
+    phoneNumber,
+    email,
+    photoUrl,
+    _id,
+    role,
+  };
+
+  try {
+    if (role === "user") {
+      const user = await User.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    } else {
+      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
+        new: true,
+      });
+      res
+        .status(200)
+        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
+      return;
+    }
+  } catch (error) {
+    res.status(401).json({ error: "User not foundss" });
   }
 };
 
@@ -201,10 +298,13 @@ module.exports = {
   updateRequest,
   getPet,
   listFoundationRequests,
+  createUser,
   login,
   loadUser,
+  updateProfile,
   deleteFoundation,
   listUsers,
   deleteUsers,
   bulkReject,
+  createRequest,
 };
