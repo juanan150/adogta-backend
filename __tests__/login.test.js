@@ -2,14 +2,61 @@ const request = require("supertest");
 const app = require("../app");
 const mongoose = require("mongoose");
 
+afterAll(() => mongoose.disconnect());
+
 describe("post/login", () => {
-  test("Login an user", async () => {
+  test("Response 200 Ok", async () => {
     const response = await request(app).post("/login").send({
       email: "found@gmail.com",
       password: "Prueba123",
     });
     expect(response.statusCode).toBe(200);
   });
-});
 
-afterAll(() => mongoose.disconnect());
+  test("Response with correct json", async () => {
+    const response = await request(app).post("/login").send({
+      email: "found@gmail.com",
+      password: "Prueba123",
+    });
+    expect(response.type).toBe("application/json");
+  });
+
+  test("Response with correct properties", async () => {
+    const response = await request(app).post("/login").send({
+      email: "found@gmail.com",
+      password: "Prueba123",
+    });
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        email: expect.any(String),
+        token: expect.any(String),
+        name: expect.any(String),
+        _id: expect.any(String),
+      })
+    );
+  });
+
+  /*   test("If user logs in, redirect to home page", async () => {
+    const response = await request(app).post("/login").send({
+      email: "foundmalo@gmail.com",
+      password: "Prueba123",
+    });
+    expect(response.statusCode).toBe(401);
+  }); */
+
+  test("Not login when user enters invalid credentials", async () => {
+    const response = await request(app).post("/login").send({
+      email: "foundmalo@gmail.com",
+      password: "Prueba123",
+    });
+    expect(response.statusCode).toBe(401);
+  });
+
+  test("Not login when user doesn't enter credentials", async () => {
+    const response = await request(app).post("/login").send({
+      email: "",
+      password: "",
+    });
+    expect(response.statusCode).toBe(401);
+  });
+});
