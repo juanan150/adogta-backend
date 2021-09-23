@@ -124,11 +124,15 @@ const loadUser = async (req, res) => {
 const listPets = async (req, res, next) => {
   try {
     const page = req.query.page || 1;
-    const count = await Pet.count({ foundationId: req.params.id });
-    const pets = await Pet.find({ foundationId: req.params.id }, null, {
-      skip: (page - 1) * 10,
-      limit: 10,
-    });
+    const count = await Pet.count({ foundationId: req.params.foundationId });
+    const pets = await Pet.find(
+      { foundationId: req.params.foundationId },
+      null,
+      {
+        skip: (page - 1) * 10,
+        limit: 10,
+      }
+    );
     res.status(200).json({ page, count, pets });
   } catch (e) {
     next(e);
@@ -250,7 +254,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
