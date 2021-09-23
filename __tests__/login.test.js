@@ -6,9 +6,10 @@ const User = require("../models/User");
 
 afterAll(() => mongoose.disconnect());
 
-describe("post/login", () => {
+describe("POST /login", () => {
+  let user;
   beforeEach(async () => {
-    const user = await User.authenticate("foundationt@test.com", "Prueba123");
+    user = await User.authenticate("foundationt@test.com", "Prueba123");
   });
 
   test("Response 200 Ok", async () => {
