@@ -124,11 +124,15 @@ const loadUser = async (req, res) => {
 const listPets = async (req, res, next) => {
   try {
     const page = req.query.page || 1;
-    const count = await Pet.count({ foundationId: req.params.id });
-    const pets = await Pet.find({ foundationId: req.params.id }, null, {
-      skip: (page - 1) * 10,
-      limit: 10,
-    });
+    const count = await Pet.count({ foundationId: req.params.foundationId });
+    const pets = await Pet.find(
+      { foundationId: req.params.foundationId },
+      null,
+      {
+        skip: (page - 1) * 10,
+        limit: 10,
+      }
+    );
     res.status(200).json({ page, count, pets });
   } catch (e) {
     next(e);
@@ -243,6 +247,24 @@ const updateRequest = async (req, res, next) => {
   }
 };
 
+const bulkReject = async (req, res, next) => {
+  try {
+    const request = await AdoptionRequest.updateMany(
+      {
+        petId: req.params.petId,
+        _id: { $ne: req.body._id },
+      },
+      {
+        responseStatus: "rejected",
+      },
+      { new: true }
+    );
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
+
 const listFoundationRequests = async (req, res, next) => {
   try {
     response = await AdoptionRequest.find().populate({
@@ -250,7 +272,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -283,5 +305,6 @@ module.exports = {
   deleteFoundation,
   listUsers,
   deleteUsers,
+  bulkReject,
   createRequest,
 };
