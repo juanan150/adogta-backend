@@ -1,29 +1,34 @@
 const request = require("supertest");
 const app = require("../app");
 const mongoose = require("mongoose");
+const faker = require("faker");
+const User = require("../models/User");
 
 afterAll(() => mongoose.disconnect());
 
 describe("post/login", () => {
   test("Response 200 Ok", async () => {
+    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
-      email: "found@gmail.com",
+      email: user.email,
       password: "Prueba123",
     });
     expect(response.statusCode).toBe(200);
   });
 
   test("Response with correct json", async () => {
+    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
-      email: "found@gmail.com",
+      email: user.email,
       password: "Prueba123",
     });
     expect(response.type).toBe("application/json");
   });
 
   test("Response with correct properties", async () => {
+    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
-      email: "found@gmail.com",
+      email: user.email,
       password: "Prueba123",
     });
     expect(response.body).toEqual(
@@ -36,18 +41,10 @@ describe("post/login", () => {
     );
   });
 
-  /*   test("If user logs in, redirect to home page", async () => {
-    const response = await request(app).post("/login").send({
-      email: "foundmalo@gmail.com",
-      password: "Prueba123",
-    });
-    expect(response.statusCode).toBe(401);
-  }); */
-
   test("Not login when user enters invalid credentials", async () => {
     const response = await request(app).post("/login").send({
-      email: "foundmalo@gmail.com",
-      password: "Prueba123",
+      email: faker.internet.email(),
+      password: faker.internet.password(),
     });
     expect(response.statusCode).toBe(401);
   });

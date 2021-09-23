@@ -21,6 +21,7 @@
     "nodemon": "^2.0.12"
   },
   "devDependencies": {
+    "faker": "^5.5.3",
     "jest": "^27.2.1",
     "supertest": "^6.1.6"
   }
