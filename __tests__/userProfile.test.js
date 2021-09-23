@@ -7,7 +7,7 @@ const faker = require("faker");
 
 afterAll(() => mongoose.disconnect());
 
-describe("put/:id/profile", () => {
+describe("PUT /:id/profile", () => {
   let user, token;
   const _id = "6140e9523c67cea2af68ecf5";
   beforeEach(async () => {
