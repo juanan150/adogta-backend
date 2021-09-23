@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-if (process.env.NODE_ENV === "start")
+if (process.env.NODE_ENV === "start" || "dev")
   app.listen(config.port, () => {
     console.log("Server started ...");
   });

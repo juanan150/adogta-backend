@@ -250,7 +250,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
