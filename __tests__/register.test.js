@@ -17,9 +17,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(201);
   });
-});
 
-describe("post /signup", () => {
   test("Create a admin", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -29,9 +27,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(201);
   });
-});
 
-describe("post /signup", () => {
   test("Create a foundation", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -41,9 +37,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(201);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of user that already exists", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -53,9 +47,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of admin that already exists", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -65,9 +57,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of a foundation that already exists", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -77,9 +67,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of user with empty name", async () => {
     const response = await request(app).post("/signup").send({
       name: "",
@@ -89,9 +77,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of admin with empty name", async () => {
     const response = await request(app).post("/signup").send({
       name: "",
@@ -101,9 +87,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of a foundation with empty name", async () => {
     const response = await request(app).post("/signup").send({
       name: "",
@@ -113,9 +97,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of user with empty email", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -125,9 +107,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of admin with empty email", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -137,9 +117,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of a foundation with empty email", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -149,9 +127,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of user with empty password", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -161,9 +137,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of admin with empty password", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
@@ -173,9 +147,7 @@ describe("post /signup", () => {
     });
     expect(response.statusCode).toBe(422);
   });
-});
 
-describe("post /signup", () => {
   test("Prevent creation of a foundation with empty password", async () => {
     const response = await request(app).post("/signup").send({
       name: faker.name.findName(),
