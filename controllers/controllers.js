@@ -81,8 +81,17 @@ const login = async (req, res) => {
     user = await Foundation.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
-      const { _id, name, email, role } = user;
-      res.json({ token, _id, email, name, role });
+      const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+      res.json({
+        token,
+        _id,
+        email,
+        name,
+        role,
+        address,
+        phoneNumber,
+        photoUrl,
+      });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
@@ -187,6 +196,11 @@ const updateProfile = async (req, res, next) => {
           if (error) {
             return next(error);
           }
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
+            if (err) {
+              return next(error);
+            }
+          });
 
           await schemas[role].findByIdAndUpdate(_id, {
             ...data,
