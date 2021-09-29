@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
-var cloudinary = require("cloudinary").v2;
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
 const createUser = async (req, res, next) => {
   try {
@@ -74,8 +75,8 @@ const login = async (req, res) => {
 
   if (user) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    const { _id, name, email, role } = user;
-    res.json({ token, _id, name, email, role });
+    const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+    res.json({ token, _id, name, email, role, address, phoneNumber, photoUrl });
   } else {
     user = await Foundation.authenticate(email, password);
     if (user) {
@@ -177,45 +178,34 @@ const updateProfile = async (req, res, next) => {
     role,
   };
   const imageFile = req.files.image;
+  const schemas = { user: User, foundation: Foundation };
   try {
-    if (role === "user") {
-      imageFile
-        ? cloudinary.uploader.upload(
-            imageFile.file,
-            async function (error, result) {
-              if (error) {
-                return next(error);
-              }
+    if (imageFile) {
+      cloudinary.uploader.upload(
+        imageFile.file,
+        async function (error, result) {
+          if (error) {
+            return next(error);
+          }
 
-              await User.findByIdAndUpdate(_id, {
-                ...data,
-                photoUrl: result.url,
-              });
-            }
-          )
-        : await User.findByIdAndUpdate(_id, data);
-
-      res
-        .status(200)
-        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
-      return;
+          await schemas[role].findByIdAndUpdate(_id, {
+            ...data,
+            photoUrl: result.url,
+          });
+          res.status(200).json({
+            name,
+            email,
+            address,
+            phoneNumber,
+            role,
+            photoUrl: result.url,
+            _id,
+          });
+          return;
+        }
+      );
     } else {
-      imageFile
-        ? cloudinary.uploader.upload(
-            imageFile.file,
-            async function (error, result) {
-              if (error) {
-                return next(error);
-              }
-
-              await Foundation.findByIdAndUpdate(_id, {
-                ...data,
-                photoUrl: result.url,
-              });
-            }
-          )
-        : await Foundation.findByIdAndUpdate(_id, data);
-
+      await schemas[role].findByIdAndUpdate(_id, data);
       res
         .status(200)
         .json({ name, email, address, phoneNumber, role, photoUrl, _id });
