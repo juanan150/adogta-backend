@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+var cloudinary = require("cloudinary").v2;
 
 const createUser = async (req, res, next) => {
   try {
@@ -167,37 +168,61 @@ const createPet = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
   const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
-
   data = {
     name,
     address,
     phoneNumber,
     email,
-    photoUrl,
     _id,
     role,
   };
-
+  const imageFile = req.files.image;
   try {
     if (role === "user") {
-      const user = await User.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
+      imageFile
+        ? cloudinary.uploader.upload(
+            imageFile.file,
+            async function (error, result) {
+              if (error) {
+                return next(error);
+              }
+
+              await User.findByIdAndUpdate(_id, {
+                ...data,
+                photoUrl: result.url,
+              });
+            }
+          )
+        : await User.findByIdAndUpdate(_id, data);
+
       res
         .status(200)
         .json({ name, email, address, phoneNumber, role, photoUrl, _id });
       return;
     } else {
-      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
+      imageFile
+        ? cloudinary.uploader.upload(
+            imageFile.file,
+            async function (error, result) {
+              if (error) {
+                return next(error);
+              }
+
+              await Foundation.findByIdAndUpdate(_id, {
+                ...data,
+                photoUrl: result.url,
+              });
+            }
+          )
+        : await Foundation.findByIdAndUpdate(_id, data);
+
       res
         .status(200)
         .json({ name, email, address, phoneNumber, role, photoUrl, _id });
       return;
     }
   } catch (error) {
-    res.status(401).json({ error: "User not foundss" });
+    res.status(401).json({ error: "User not found" });
   }
 };
 
@@ -282,7 +307,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
