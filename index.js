@@ -10,7 +10,15 @@ app.use(cors());
 app.use(express.json());
 app.use(routes);
 
-mongoose.connect(config.dbConnectionString, console.log("Connected to db"));
+process.env.NODE_ENV === "test"
+  ? mongoose.connect(
+      process.env.DB_CONNECTION_STRING_TEST,
+      console.log("Connected to db-test")
+    )
+  : mongoose.connect(
+      process.env.DB_CONNECTION_STRING,
+      console.log("Connected to db")
+    );
 
 mongoose.connection.on("error", function (e) {
   console.error(e);
@@ -24,6 +32,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-app.listen(config.port, () => {
-  console.log("Server started ...");
-});
+if (process.env.NODE_ENV === "start" || "dev")
+  app.listen(config.port, () => {
+    console.log("Server started ...");
+  });
+
+module.exports = app;
