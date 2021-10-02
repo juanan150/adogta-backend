@@ -4,6 +4,14 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+
+cloudinary.config({
+  cloud_name: "dhqas6oro",
+  api_key: "534792226896236",
+  api_secret: "xvE1je_5sLOG-b4bs_E96hj1BG4",
+});
 
 const createUser = async (req, res, next) => {
   try {
@@ -149,19 +157,45 @@ const destroyPet = async (req, res, next) => {
 };
 
 const createPet = async (req, res, next) => {
+  const imagesFiles = req.files;
+  const { name, age, description } = req.body;
+  // console.log("Files:", imagesFiles);
+
+  const data = {
+    name,
+    description,
+    age,
+  };
+
   try {
-    data = {
-      name: req.body.name,
-      description: req.body.description,
-      photoUrl: req.body.photoUrl,
-      age: req.body.age,
-      foundationId: req.params.foundationId,
-    };
-    const pet = new Pet(data);
-    await pet.save();
-    res.status(201).json(pet);
-  } catch (e) {
-    next(e);
+    cloudinary.uploader.upload(
+      imagesFiles.photoUrl.file,
+      async function (error, result) {
+        if (error) {
+          return next(error);
+        }
+        fs.rm(`uploads/${imagesFiles.uuid}`, { recursive: true }, err => {
+          if (err) {
+            return next(error);
+          }
+        });
+
+        const dataPet = {
+          ...data,
+          photoUrl: result.url,
+          foundationId: req.params.foundationId,
+        };
+        const pet = new Pet(dataPet);
+        console.log(pet);
+        await pet.save();
+        res.status(201).json(pet);
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    res
+      .status(400)
+      .json({ error: "*Please fill in all the fields of the form" });
   }
 };
 
@@ -197,7 +231,7 @@ const updateProfile = async (req, res, next) => {
       return;
     }
   } catch (error) {
-    res.status(401).json({ error: "User not foundss" });
+    res.status(401).json({ error: "User not found" });
   }
 };
 
@@ -272,7 +306,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
