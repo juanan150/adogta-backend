@@ -7,16 +7,15 @@ const petSchema = mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, "A description is required"],
+    required: [true, "Description is required"],
   },
   photoUrl: {
-    //Pendiente con cloudinary
     type: Array,
-    required: [false, "A description is required"],
+    required: [true, "An image is required"],
   },
   age: {
     type: Number,
-    required: true,
+    required: [true, "Age is required"],
   },
   foundationId: {
     type: mongoose.Schema.Types.ObjectId,
