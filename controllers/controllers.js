@@ -143,7 +143,7 @@ const listPets = async (req, res, next) => {
         skip: (page - 1) * 10,
         limit: 10,
       }
-    );
+    ).sort({ createdAt: -1 });
     res.status(200).json({ page, count, pets });
   } catch (e) {
     next(e);
