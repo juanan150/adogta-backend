@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const sendMail = require("../utils/sendMail");
 
 const createUser = async (req, res, next) => {
   try {
@@ -28,7 +29,7 @@ const createUser = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
   try {
-    const { _id } = res.locals.user;
+    const { _id, email, name } = res.locals.user;
 
     const sameAdoptions = await AdoptionRequest.find({
       userId: _id,
@@ -53,6 +54,14 @@ const createRequest = async (req, res, next) => {
           address: req.body.address,
         }
       );
+
+      await sendMail({
+        to: email,
+        from: "John Cortes <cortesjohnj@gmail.com>",
+        subject: `${name}, We have received an adoption request from you!`,
+        template_id: config.senGridTemplateId,
+      });
+
       res.status(200).json({ request });
     }
   } catch (err) {

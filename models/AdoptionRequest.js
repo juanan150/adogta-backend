@@ -19,6 +19,7 @@ const adoptionRequestSchema = mongoose.Schema({
     default: "pending",
     type: String,
   },
+  timestamps: true,
 });
 
 const AdoptionRequest = mongoose.model(
