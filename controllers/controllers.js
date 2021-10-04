@@ -167,6 +167,8 @@ const createPet = async (req, res, next) => {
     foundationId: req.params.foundationId,
   };
 
+  console.log(imagesFiles.photoUrl);
+
   try {
     if (!imagesFiles.photoUrl.length) {
       cloudinary.uploader.upload(
@@ -182,6 +184,16 @@ const createPet = async (req, res, next) => {
           const pet = new Pet(dataPet);
           await pet.save();
           res.status(201).json(pet);
+
+          fs.rm(
+            `uploads/${imagesFiles.photoUrl.uuid}`,
+            { recursive: true },
+            err => {
+              if (err) {
+                return next(error);
+              }
+            }
+          );
         }
       );
     } else {
@@ -203,6 +215,15 @@ const createPet = async (req, res, next) => {
               await pet.save();
               res.status(201).json(pet);
             }
+            fs.rm(
+              `uploads/${imagesFiles.photoUrl[i].uuid}`,
+              { recursive: true },
+              err => {
+                if (err) {
+                  return next(error);
+                }
+              }
+            );
           }
         );
       }

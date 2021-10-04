@@ -15,16 +15,6 @@ const petSchema = mongoose.Schema({
       required: true,
     },
   ],
-
-  // {
-  //   type: Array,
-  //   required: [true, "An image is required"],
-  //   validate: {
-  //     validator: async function (value) {
-  //       return value.length > 0;
-  //     },
-  //   },
-  // },
   age: {
     type: Number,
     required: [true, "Age is required"],
