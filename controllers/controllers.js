@@ -290,7 +290,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -302,6 +302,20 @@ const deleteUsers = async (req, res, next) => {
   try {
     await User.deleteMany(req.body);
     res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
+
+const listUserRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find({
+      userId: req.params.userId,
+    }).populate({
+      path: "petId",
+      model: Pet,
+    });
+    res.status(200).json(response);
   } catch (e) {
     next(e);
   }
@@ -325,4 +339,5 @@ module.exports = {
   deleteUsers,
   bulkReject,
   createRequest,
+  listUserRequests,
 };
