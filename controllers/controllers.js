@@ -249,6 +249,16 @@ const updateRequest = async (req, res, next) => {
       },
       { new: true }
     );
+    if (req.body.responseStatus === "approved") {
+      await Pet.findOneAndUpdate(
+        {
+          _id: request.petId,
+        },
+        {
+          adopted: true,
+        }
+      );
+    }
     res.status(200).json(request);
   } catch (e) {
     next(e);
