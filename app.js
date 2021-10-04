@@ -13,7 +13,9 @@ bb.extend(app, {
   upload: true,
   path: "uploads",
   allowedPath: /./,
+  mimeTypeLimit: ["image/jpeg", "image/png"],
 });
+
 app.use(routes);
 
 process.env.NODE_ENV === "test"

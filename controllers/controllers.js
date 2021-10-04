@@ -159,38 +159,54 @@ const destroyPet = async (req, res, next) => {
 const createPet = async (req, res, next) => {
   const imagesFiles = req.files;
   const { name, age, description } = req.body;
-  // console.log("Files:", imagesFiles);
 
   const data = {
     name,
     description,
     age,
+    foundationId: req.params.foundationId,
   };
 
   try {
-    cloudinary.uploader.upload(
-      imagesFiles.photoUrl.file,
-      async function (error, result) {
-        if (error) {
-          return next(error);
-        }
-        fs.rm(`uploads/${imagesFiles.uuid}`, { recursive: true }, err => {
-          if (err) {
+    if (!imagesFiles.photoUrl.length) {
+      cloudinary.uploader.upload(
+        imagesFiles.photoUrl.file,
+        async function (error, result) {
+          if (error) {
             return next(error);
           }
-        });
-
-        const dataPet = {
-          ...data,
-          photoUrl: result.url,
-          foundationId: req.params.foundationId,
-        };
-        const pet = new Pet(dataPet);
-        console.log(pet);
-        await pet.save();
-        res.status(201).json(pet);
+          const dataPet = {
+            ...data,
+            photoUrl: result.url,
+          };
+          const pet = new Pet(dataPet);
+          await pet.save();
+          res.status(201).json(pet);
+        }
+      );
+    } else {
+      let petPhotos = [];
+      for (let i = 0; i < imagesFiles.photoUrl.length; i++) {
+        cloudinary.uploader.upload(
+          imagesFiles.photoUrl[i].file,
+          async function (error, result) {
+            if (error) {
+              return next(error);
+            }
+            petPhotos.push(result.url);
+            dataPet = {
+              ...data,
+              photoUrl: [...petPhotos],
+            };
+            if (dataPet.photoUrl.length === imagesFiles.photoUrl.length) {
+              const pet = new Pet(dataPet);
+              await pet.save();
+              res.status(201).json(pet);
+            }
+          }
+        );
       }
-    );
+    }
   } catch (error) {
     console.log(error);
     res
