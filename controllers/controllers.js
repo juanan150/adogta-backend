@@ -7,12 +7,6 @@ const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 
-cloudinary.config({
-  cloud_name: "dhqas6oro",
-  api_key: "534792226896236",
-  api_secret: "xvE1je_5sLOG-b4bs_E96hj1BG4",
-});
-
 const createUser = async (req, res, next) => {
   try {
     let newUser;
@@ -157,7 +151,7 @@ const destroyPet = async (req, res, next) => {
 };
 
 const createPet = async (req, res, next) => {
-  const imagesFiles = req.files;
+  let imagesFiles = req.files;
   const { name, age, description } = req.body;
 
   const data = {
@@ -167,26 +161,38 @@ const createPet = async (req, res, next) => {
     foundationId: req.params.foundationId,
   };
 
-  console.log(imagesFiles.photoUrl);
-
   try {
+    let arrayOfImagesFiles = {
+      photoUrl: [],
+    };
     if (!imagesFiles.photoUrl.length) {
+      arrayOfImagesFiles.photoUrl.push(imagesFiles.photoUrl);
+    } else {
+      arrayOfImagesFiles = {
+        ...imagesFiles,
+      };
+    }
+
+    let petPhotos = [];
+    for (let i = 0; i < arrayOfImagesFiles.photoUrl.length; i++) {
       cloudinary.uploader.upload(
-        imagesFiles.photoUrl.file,
+        arrayOfImagesFiles.photoUrl[i].file,
         async function (error, result) {
           if (error) {
             return next(error);
           }
-          const dataPet = {
+          petPhotos.push(result.url);
+          dataPet = {
             ...data,
-            photoUrl: result.url,
+            photoUrl: [...petPhotos],
           };
-          const pet = new Pet(dataPet);
-          await pet.save();
-          res.status(201).json(pet);
-
+          if (dataPet.photoUrl.length === arrayOfImagesFiles.photoUrl.length) {
+            const pet = new Pet(dataPet);
+            await pet.save();
+            res.status(201).json(pet);
+          }
           fs.rm(
-            `uploads/${imagesFiles.photoUrl.uuid}`,
+            `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
             { recursive: true },
             err => {
               if (err) {
@@ -196,40 +202,8 @@ const createPet = async (req, res, next) => {
           );
         }
       );
-    } else {
-      let petPhotos = [];
-      for (let i = 0; i < imagesFiles.photoUrl.length; i++) {
-        cloudinary.uploader.upload(
-          imagesFiles.photoUrl[i].file,
-          async function (error, result) {
-            if (error) {
-              return next(error);
-            }
-            petPhotos.push(result.url);
-            dataPet = {
-              ...data,
-              photoUrl: [...petPhotos],
-            };
-            if (dataPet.photoUrl.length === imagesFiles.photoUrl.length) {
-              const pet = new Pet(dataPet);
-              await pet.save();
-              res.status(201).json(pet);
-            }
-            fs.rm(
-              `uploads/${imagesFiles.photoUrl[i].uuid}`,
-              { recursive: true },
-              err => {
-                if (err) {
-                  return next(error);
-                }
-              }
-            );
-          }
-        );
-      }
     }
   } catch (error) {
-    console.log(error);
     res
       .status(400)
       .json({ error: "*Please fill in all the fields of the form" });
