@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
 const createUser = async (req, res, next) => {
   try {
@@ -73,14 +75,23 @@ const login = async (req, res) => {
 
   if (user) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    const { _id, name, email, role } = user;
-    res.json({ token, _id, name, email, role });
+    const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+    res.json({ token, _id, name, email, role, address, phoneNumber, photoUrl });
   } else {
     user = await Foundation.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
-      const { _id, name, email, role } = user;
-      res.json({ token, _id, email, name, role });
+      const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+      res.json({
+        token,
+        _id,
+        email,
+        name,
+        role,
+        address,
+        phoneNumber,
+        photoUrl,
+      });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
@@ -174,37 +185,55 @@ const createPet = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
   const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
-
   data = {
     name,
     address,
     phoneNumber,
     email,
-    photoUrl,
     _id,
     role,
   };
-
+  const imageFile = req.files.image;
+  const schemas = { user: User, foundation: Foundation };
   try {
-    if (role === "user") {
-      const user = await User.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
-      res
-        .status(200)
-        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
-      return;
+    if (imageFile) {
+      cloudinary.uploader.upload(
+        imageFile.file,
+        async function (error, result) {
+          if (error) {
+            return next(error);
+          }
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
+            if (err) {
+              return next(error);
+            }
+          });
+
+          await schemas[role].findByIdAndUpdate(_id, {
+            ...data,
+            photoUrl: result.url,
+          });
+          res.status(200).json({
+            name,
+            email,
+            address,
+            phoneNumber,
+            role,
+            photoUrl: result.url,
+            _id,
+          });
+          return;
+        }
+      );
     } else {
-      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
+      await schemas[role].findByIdAndUpdate(_id, data);
       res
         .status(200)
         .json({ name, email, address, phoneNumber, role, photoUrl, _id });
       return;
     }
   } catch (error) {
-    res.status(401).json({ error: "User not foundss" });
+    res.status(401).json({ error: "User not found" });
   }
 };
 
@@ -297,7 +326,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
