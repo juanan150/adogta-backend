@@ -7,9 +7,9 @@ sgMail.setApiKey(config.sendGrid);
 function sendMail({ to, subject, template_id }) {
   const msg = {
     to: "John Cortes <cortesjohnj@gmail.com>",
-    from: "John Cortes <cortesjohnj@gmail.com>",
+    from: "Adogta <adogtatop@gmail.com>",
     subject: "Sending with SendGrid is Fun",
-    template_id: "d-20060872dda64b6390f7a60e73e251bd",
+    template_id: "d-58752bd226294b3b90ea467f43775223",
     // dynamic_template_data: {
 
     // },

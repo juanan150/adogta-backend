@@ -15,6 +15,7 @@ const createUser = async (req, res, next) => {
       newUser = await new Foundation(req.body);
     }
     await newUser.save();
+
     res.status(201).json(newUser);
   } catch (err) {
     if (err.name === "ValidationError") {
