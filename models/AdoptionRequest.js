@@ -21,7 +21,9 @@ const adoptionRequestSchema = mongoose.Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const AdoptionRequest = mongoose.model(
