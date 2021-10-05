@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const opts = {
-  timestamps: { currentTime: () => Math.floor(Date.now() / 1000) },
-};
-
 const userSchema = mongoose.Schema(
   {
     email: {
@@ -41,7 +37,7 @@ const userSchema = mongoose.Schema(
       type: String,
     },
   },
-  opts
+  { timestamps: true }
 );
 
 userSchema.pre("save", async function (next) {

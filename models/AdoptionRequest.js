@@ -1,7 +1,4 @@
 const mongoose = require("mongoose");
-const opts = {
-  timestamps: { currentTime: () => Math.floor(Date.now() / 1000) },
-};
 
 const adoptionRequestSchema = mongoose.Schema(
   {
@@ -24,7 +21,7 @@ const adoptionRequestSchema = mongoose.Schema(
       type: String,
     },
   },
-  opts
+  { timestamps: true }
 );
 
 const AdoptionRequest = mongoose.model(
