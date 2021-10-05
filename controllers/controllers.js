@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/index");
 const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
 const createUser = async (req, res, next) => {
   try {
@@ -73,14 +75,23 @@ const login = async (req, res) => {
 
   if (user) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    const { _id, name, email, role } = user;
-    res.json({ token, _id, name, email, role });
+    const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+    res.json({ token, _id, name, email, role, address, phoneNumber, photoUrl });
   } else {
     user = await Foundation.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
-      const { _id, name, email, role } = user;
-      res.json({ token, _id, email, name, role });
+      const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
+      res.json({
+        token,
+        _id,
+        email,
+        name,
+        role,
+        address,
+        phoneNumber,
+        photoUrl,
+      });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
@@ -93,8 +104,13 @@ const listFoundations = async (req, res, next) => {
     const foundations = await Foundation.find(
       {},
       { password: 0, __v: 0, role: 0 },
-      { skip: (page - 1) * 5, limit: 5 }
-    );
+      {
+        skip: (page - 1) * 5,
+        limit: 5,
+      }
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
     res.status(200).json(foundations);
   } catch (e) {
     return next(e);
@@ -108,7 +124,9 @@ const listUsers = async (req, res, next) => {
       {},
       { password: 0, __v: 0, role: 0 },
       { skip: (page - 1) * 5, limit: 5 }
-    );
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
     res.status(200).json(users);
   } catch (e) {
     return next(e);
@@ -132,7 +150,7 @@ const listPets = async (req, res, next) => {
         skip: (page - 1) * 10,
         limit: 10,
       }
-    );
+    ).sort({ createdAt: -1 });
     res.status(200).json({ page, count, pets });
   } catch (e) {
     next(e);
@@ -167,37 +185,55 @@ const createPet = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
   const { name, address, email, phoneNumber, photoUrl, _id, role } = req.body;
-
   data = {
     name,
     address,
     phoneNumber,
     email,
-    photoUrl,
     _id,
     role,
   };
-
+  const imageFile = req.files.image;
+  const schemas = { user: User, foundation: Foundation };
   try {
-    if (role === "user") {
-      const user = await User.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
-      res
-        .status(200)
-        .json({ name, email, address, phoneNumber, role, photoUrl, _id });
-      return;
+    if (imageFile) {
+      cloudinary.uploader.upload(
+        imageFile.file,
+        async function (error, result) {
+          if (error) {
+            return next(error);
+          }
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
+            if (err) {
+              return next(error);
+            }
+          });
+
+          await schemas[role].findByIdAndUpdate(_id, {
+            ...data,
+            photoUrl: result.url,
+          });
+          res.status(200).json({
+            name,
+            email,
+            address,
+            phoneNumber,
+            role,
+            photoUrl: result.url,
+            _id,
+          });
+          return;
+        }
+      );
     } else {
-      const foundation = await Foundation.findByIdAndUpdate(_id, data, {
-        new: true,
-      });
+      await schemas[role].findByIdAndUpdate(_id, data);
       res
         .status(200)
         .json({ name, email, address, phoneNumber, role, photoUrl, _id });
       return;
     }
   } catch (error) {
-    res.status(401).json({ error: "User not foundss" });
+    res.status(401).json({ error: "User not found" });
   }
 };
 
@@ -320,6 +356,37 @@ const listUserRequests = async (req, res, next) => {
     next(e);
   }
 };
+const adminSearch = async (req, res, next) => {
+  try {
+    let toSearch = {};
+    toSearch[req.body.field] = req.body.value;
+    const page = req.query.page || 1;
+
+    if (req.body.field === "_id" && req.body.value.length !== 24) {
+      res.status(200).json([]);
+      return;
+    }
+
+    if (req.body.isUser) {
+      let users = await User.find(
+        toSearch,
+        { password: 0, __v: 0, role: 0 },
+        { skip: (page - 1) * 5, limit: 5 }
+      );
+      res.status(200).json(users);
+    } else {
+      let foundation = await Foundation.find(
+        toSearch,
+        { password: 0, __v: 0, role: 0 },
+        { skip: (page - 1) * 5, limit: 5 }
+      );
+      res.status(200).json(foundation);
+    }
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+};
 
 module.exports = {
   listFoundations,
@@ -340,4 +407,5 @@ module.exports = {
   bulkReject,
   createRequest,
   listUserRequests,
+  adminSearch,
 };
