@@ -210,8 +210,16 @@ const updateProfile = async (req, res, next) => {
 
 const getPet = async (req, res, next) => {
   try {
-    const pet = await Pet.findOne({ _id: req.params.petId });
-    res.status(200).json(pet);
+    if (req.params.petId.length === 24) {
+      const pet = await Pet.findOne({ _id: req.params.petId });
+      if (pet) {
+        res.status(200).json(pet);
+      } else {
+        res.status(404).json({ error: "Pet not found" });
+      }
+    } else {
+      res.status(400).json({ error: "Invalid Pet id" });
+    }
   } catch (e) {
     next(e);
   }
@@ -248,6 +256,16 @@ const updateRequest = async (req, res, next) => {
       },
       { new: true }
     );
+    if (req.body.responseStatus === "approved") {
+      await Pet.findOneAndUpdate(
+        {
+          _id: request.petId,
+        },
+        {
+          adopted: true,
+        }
+      );
+    }
     res.status(200).json(request);
   } catch (e) {
     next(e);
