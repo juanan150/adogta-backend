@@ -104,8 +104,13 @@ const listFoundations = async (req, res, next) => {
     const foundations = await Foundation.find(
       {},
       { password: 0, __v: 0, role: 0 },
-      { skip: (page - 1) * 5, limit: 5 }
-    );
+      {
+        skip: (page - 1) * 5,
+        limit: 5,
+      }
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
     res.status(200).json(foundations);
   } catch (e) {
     return next(e);
@@ -119,7 +124,9 @@ const listUsers = async (req, res, next) => {
       {},
       { password: 0, __v: 0, role: 0 },
       { skip: (page - 1) * 5, limit: 5 }
-    );
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
     res.status(200).json(users);
   } catch (e) {
     return next(e);
@@ -232,8 +239,16 @@ const updateProfile = async (req, res, next) => {
 
 const getPet = async (req, res, next) => {
   try {
-    const pet = await Pet.findOne({ _id: req.params.petId });
-    res.status(200).json(pet);
+    if (req.params.petId.length === 24) {
+      const pet = await Pet.findOne({ _id: req.params.petId });
+      if (pet) {
+        res.status(200).json(pet);
+      } else {
+        res.status(404).json({ error: "Pet not found" });
+      }
+    } else {
+      res.status(400).json({ error: "Invalid Pet id" });
+    }
   } catch (e) {
     next(e);
   }
@@ -328,6 +343,38 @@ const deleteUsers = async (req, res, next) => {
   }
 };
 
+const adminSearch = async (req, res, next) => {
+  try {
+    let toSearch = {};
+    toSearch[req.body.field] = req.body.value;
+    const page = req.query.page || 1;
+
+    if (req.body.field === "_id" && req.body.value.length !== 24) {
+      res.status(200).json([]);
+      return;
+    }
+
+    if (req.body.isUser) {
+      let users = await User.find(
+        toSearch,
+        { password: 0, __v: 0, role: 0 },
+        { skip: (page - 1) * 5, limit: 5 }
+      );
+      res.status(200).json(users);
+    } else {
+      let foundation = await Foundation.find(
+        toSearch,
+        { password: 0, __v: 0, role: 0 },
+        { skip: (page - 1) * 5, limit: 5 }
+      );
+      res.status(200).json(foundation);
+    }
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+};
+
 module.exports = {
   listFoundations,
   destroyPet,
@@ -346,4 +393,5 @@ module.exports = {
   deleteUsers,
   bulkReject,
   createRequest,
+  adminSearch,
 };
