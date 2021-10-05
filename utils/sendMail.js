@@ -10,9 +10,6 @@ function sendMail({ to, from, subject, template_id }) {
     from,
     subject,
     template_id,
-    // dynamic_template_data: {
-
-    // },
   };
 
   sgMail
@@ -24,6 +21,5 @@ function sendMail({ to, from, subject, template_id }) {
       console.error(error);
     });
 }
-// sendMail();
 
 module.exports = sendMail;
