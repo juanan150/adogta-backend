@@ -21,6 +21,7 @@ app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);
 app.post("/signup", controllers.createUser);
 app.post("/pets/:petId/request", auth, controllers.createRequest);
+app.get("/:userId/requests", auth, controllers.listUserRequests);
 app.post("/adminSearch", authAdmin, controllers.adminSearch);
 
 module.exports = app;

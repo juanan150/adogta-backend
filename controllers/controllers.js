@@ -349,6 +349,19 @@ const deleteUsers = async (req, res, next) => {
   }
 };
 
+const listUserRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find({
+      userId: req.params.userId,
+    }).populate({
+      path: "petId",
+      model: Pet,
+    });
+    res.status(200).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
 const adminSearch = async (req, res, next) => {
   try {
     let toSearch = {};
@@ -399,5 +412,6 @@ module.exports = {
   deleteUsers,
   bulkReject,
   createRequest,
+  listUserRequests,
   adminSearch,
 };
