@@ -21,11 +21,9 @@ const createUser = async (req, res, next) => {
     res.status(201).json(newUser);
   } catch (err) {
     if (err.name === "ValidationError") {
-      console.log("Validation Error:", err.errors);
       res.status(422).json(err.errors);
     } else {
       next(err);
-      console.log(err);
     }
   }
 };
@@ -69,11 +67,9 @@ const createRequest = async (req, res, next) => {
     }
   } catch (err) {
     if (err.name === "ValidationError") {
-      console.log("Validation Error:", err.errors);
       res.status(422).json(err.errors);
     } else {
       next(err);
-      console.log(err);
     }
   }
 };
