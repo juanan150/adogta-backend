@@ -6,6 +6,34 @@ const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+const sgMail = require("@sendgrid/mail");
+
+sgMail.setApiKey(
+  "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"
+);
+
+const templateApproved = "d-aabfb5e90bd24e238229bfb254c04c05";
+const subjectApproved = "Your Adogta adoption request was approved!";
+const templateRejected = "d-f3401c5e2f4e4cb985822e3a5fa6c42c";
+const subjectRejected = "Your Adogta adoption request was rejected";
+
+function sendEmail({ to, subject, template_id, dynamic_template_data = {} }) {
+  let urlDefault =
+    "http://cdn.mcauto-images-production.sendgrid.net/ba88d9d99fb7fc5c/544f9777-b1b3-4380-9be7-ece6a50b2f83/600x600.png";
+  const photoUrl = dynamic_template_data["photoUrl"];
+  if (photoUrl !== "") {
+    urlDefault = photoUrl;
+  }
+  dynamic_template_data["photoUrl"] = urlDefault;
+  const msg = {
+    to, // Change to your recipient
+    from: "adogtatop@gmail.com", // Change to your verified sender
+    subject,
+    template_id,
+    dynamic_template_data,
+  };
+  sgMail.send(msg);
+}
 
 const createUser = async (req, res, next) => {
   try {
@@ -199,7 +227,7 @@ const updateProfile = async (req, res, next) => {
           if (error) {
             return next(error);
           }
-          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, (err) => {
             if (err) {
               return next(error);
             }
@@ -280,9 +308,11 @@ const updateRequest = async (req, res, next) => {
         responseStatus: req.body.responseStatus,
       },
       { new: true }
-    );
+    )
+      .populate("userId")
+      .populate("petId");
     if (req.body.responseStatus === "approved") {
-      await Pet.findOneAndUpdate(
+      const pet = await Pet.findOneAndUpdate(
         {
           _id: request.petId,
         },
@@ -290,16 +320,40 @@ const updateRequest = async (req, res, next) => {
           adopted: true,
         }
       );
+      let varPhoto = "";
+      if (pet.photoUrl) varPhoto = pet.photoUrl[0];
+      sendEmail({
+        template_id: templateApproved,
+        dynamic_template_data: {
+          name: pet.name,
+          photoUrl: varPhoto,
+        },
+        to: request["userId"].email,
+        subject: subjectApproved,
+      });
+    } else {
+      let varPhoto = "";
+      if (request["petId"].photoUrl) varPhoto = request["petId"].photoUrl[0];
+      sendEmail({
+        template_id: templateRejected,
+        dynamic_template_data: {
+          name: request["petId"].name,
+          photoUrl: varPhoto,
+        },
+        to: request["userId"].email,
+        subject: subjectRejected,
+      });
     }
-    res.status(200).json(request);
+    res.status(200).json({});
   } catch (e) {
+    console.error(e);
     next(e);
   }
 };
 
 const bulkReject = async (req, res, next) => {
   try {
-    const request = await AdoptionRequest.updateMany(
+    await AdoptionRequest.updateMany(
       {
         petId: req.params.petId,
         _id: { $ne: req.body._id },
@@ -309,8 +363,32 @@ const bulkReject = async (req, res, next) => {
       },
       { new: true }
     );
+
+    // There is no method to update multiple documents and return all updated documents in mongoose.
+    const request = await AdoptionRequest.find({
+      petId: req.params.petId,
+      _id: { $ne: req.body._id },
+    })
+      .populate("userId")
+      .populate("petId");
+
+    for (const adoption of request) {
+      const userMail = adoption["userId"].email;
+      let varPhoto = "";
+      if (!adoption["petId"].photoUrl) varPhoto = adoption["petId"].photoUrl[0];
+      sendEmail({
+        template_id: templateRejected,
+        dynamic_template_data: {
+          name: adoption["petId"].name,
+          photoUrl: varPhoto,
+        },
+        to: userMail,
+        subject: subjectRejected,
+      });
+    }
     res.status(204).end();
   } catch (e) {
+    console.error(e);
     next(e);
   }
 };
@@ -322,7 +400,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -345,6 +423,7 @@ const adminSearch = async (req, res, next) => {
     toSearch[req.body.field] = req.body.value;
     const page = req.query.page || 1;
 
+    // _id needs to have length 24 to be valid
     if (req.body.field === "_id" && req.body.value.length !== 24) {
       res.status(200).json([]);
       return;
@@ -366,7 +445,7 @@ const adminSearch = async (req, res, next) => {
       res.status(200).json(foundation);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     next(e);
   }
 };
