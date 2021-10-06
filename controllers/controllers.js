@@ -6,6 +6,7 @@ const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+const sendMail = require("../utils/sendMail");
 
 const createUser = async (req, res, next) => {
   try {
@@ -16,6 +17,7 @@ const createUser = async (req, res, next) => {
       newUser = await new Foundation(req.body);
     }
     await newUser.save();
+
     res.status(201).json(newUser);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -28,7 +30,7 @@ const createUser = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
   try {
-    const { _id } = res.locals.user;
+    const { _id, email, name } = res.locals.user;
 
     const sameAdoptions = await AdoptionRequest.find({
       userId: _id,
@@ -53,6 +55,14 @@ const createRequest = async (req, res, next) => {
           address: req.body.address,
         }
       );
+
+      await sendMail({
+        to: email,
+        from: "Adogta <adogtatop@gmail.com>",
+        subject: `${name}, We have received an adoption request from you!`,
+        template_id: config.senGridTemplateId,
+      });
+
       res.status(200).json({ request });
     }
   } catch (err) {
@@ -199,7 +209,7 @@ const updateProfile = async (req, res, next) => {
           if (error) {
             return next(error);
           }
-          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, (err) => {
             if (err) {
               return next(error);
             }
@@ -322,7 +332,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
