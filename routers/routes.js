@@ -13,6 +13,7 @@ app.get("/foundations/:id/requests", controllers.listFoundationRequests);
 app.post("/foundations/:foundationId/pets", controllers.createPet);
 app.get("/pets/:petId", auth, controllers.getPet);
 app.get("/pets/:petId/requests", auth, controllers.listRequests);
+app.put("/pets/:petId/requests/", auth, controllers.bulkReject);
 app.put("/pets/:petId/requests/:requestId", auth, controllers.updateRequest);
 app.get("/admin", authAdmin, controllers.listFoundations);
 app.delete("/admin", authAdmin, controllers.deleteFoundation);
@@ -20,5 +21,6 @@ app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);
 app.post("/signup", controllers.createUser);
 app.post("/pets/:petId/request", auth, controllers.createRequest);
+app.post("/adminSearch", authAdmin, controllers.adminSearch);
 
 module.exports = app;

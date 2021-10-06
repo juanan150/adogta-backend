@@ -6,9 +6,13 @@ const User = require("../models/User");
 
 afterAll(() => mongoose.disconnect());
 
-describe("post/login", () => {
+describe("POST /login", () => {
+  let user;
+  beforeEach(async () => {
+    user = await User.authenticate("foundationt@test.com", "Prueba123");
+  });
+
   test("Response 200 Ok", async () => {
-    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
       email: user.email,
       password: "Prueba123",
@@ -17,7 +21,6 @@ describe("post/login", () => {
   });
 
   test("Response with correct json", async () => {
-    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
       email: user.email,
       password: "Prueba123",
@@ -26,7 +29,6 @@ describe("post/login", () => {
   });
 
   test("Response with correct properties", async () => {
-    const user = await User.authenticate("foundationt@test.com", "Prueba123");
     const response = await request(app).post("/login").send({
       email: user.email,
       password: "Prueba123",

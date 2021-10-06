@@ -21,12 +21,6 @@ mongoose.connection.on("error", function (e) {
   console.error(e);
 });
 
-/* mongoose.connect(config.dbConnectionString, console.log("Connected to db")); */
-
-mongoose.connection.on("error", function (e) {
-  console.error(e);
-});
-
 //routes that will be used
 app.use(routes);
 
