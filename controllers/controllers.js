@@ -76,7 +76,6 @@ const verifiedEmail = async (req, res) => {
 
     return res.status(200).json({ user, token });
   } catch (error) {
-    console.log("error:", error);
     res.status(500).send(error);
   }
 };
@@ -132,13 +131,22 @@ const login = async (req, res) => {
 
   let user = await User.authenticate(email, password);
 
-  if (user) {
+  if (user && user.active === true) {
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
     const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
-    res.json({ token, _id, name, email, role, address, phoneNumber, photoUrl });
+    res.json({
+      token,
+      _id,
+      name,
+      email,
+      role,
+      address,
+      phoneNumber,
+      photoUrl,
+    });
   } else {
     user = await Foundation.authenticate(email, password);
-    if (user) {
+    if (user && user.active === true) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
       const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
       res.json({
