@@ -6,25 +6,99 @@ const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+const crypto = require("crypto");
 const sendMail = require("../utils/sendMail");
 
-const createUser = async (req, res, next) => {
-  try {
-    let newUser;
-    if (req.body.role === "user" || req.body.role === "admin") {
-      newUser = await new User(req.body);
-    } else {
-      newUser = await new Foundation(req.body);
-    }
-    await newUser.save();
+// await schemas[role]
 
-    res.status(201).json(newUser);
+const createUser = async (req, res, next) => {
+  const { name, email, role } = req.body;
+  try {
+    const schema = {
+      user: User,
+      admin: User,
+      foundation: Foundation,
+    };
+
+    const newUser = await new schema[role](req.body);
+
+    const hash = crypto
+      .createHash("sha256")
+      .update(newUser.email)
+      .digest("hex");
+    newUser.passwordResetToken = hash;
+    newUser.passwordResetExpires = Date.now() + 86400000; // 24 hour
+
+    const user = await newUser.save();
+    // Virtual prop
+    if (user) {
+      res.locals.user = user;
+      next();
+    }
+    const profile = newUser.profile;
+
+    const token = jwt.sign({ userId: user._id }, config.jwtKey);
+
+    // let newUser;
+    // if (req.body.role === "user" || req.body.role === "admin") {
+    //   newUser = await new User(req.body);
+    // } else {
+    //   newUser = await new Foundation(req.body);
+    // }
+    // await newUser.save();
+
+    await sendMail({
+      to: email,
+      template_id: config.senGridTemplateEmailVerification,
+      dynamic_template_data: {
+        name: newUser.name,
+        url: `http://localhost:3000/verified/${hash}`,
+      },
+    });
+
+    res.status(201).json({ profile, token });
   } catch (err) {
     if (err.name === "ValidationError") {
       res.status(422).json(err.errors);
     } else {
       next(err);
     }
+  }
+};
+
+const verifiedEmail = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const user = await User.findOne({ passwordResetToken: token });
+
+    if (!user) {
+      return res.status(404).end();
+    }
+
+    if (Date.now() <= user.passwordResetExpires) {
+      user.passwordResetToken = null;
+      user.passwordResetExpires = null;
+      user.active = true;
+      await user.save();
+
+      // Virtual prop
+      const profile = user.profile;
+      const token = signToken(user._id);
+
+      return res.status(200).json({
+        profile,
+        token,
+      });
+    }
+    // token expired
+    return res.status(401).end();
+  } catch (error) {
+    console.log(
+      "🚀 ~ file: user.controller.js ~ line 100 ~ verified ~ error",
+      error
+    );
+    res.status(500).send(error);
   }
 };
 
@@ -209,7 +283,7 @@ const updateProfile = async (req, res, next) => {
           if (error) {
             return next(error);
           }
-          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, (err) => {
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
             if (err) {
               return next(error);
             }
@@ -332,7 +406,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -414,4 +488,5 @@ module.exports = {
   createRequest,
   listUserRequests,
   adminSearch,
+  verifiedEmail,
 };

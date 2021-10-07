@@ -33,6 +33,12 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, " Role is required"],
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
     photoUrl: {
       type: String,
     },
@@ -61,6 +67,10 @@ userSchema.statics.authenticate = async (email, password) => {
 
   return null;
 };
+
+// userSchema.virtual("profile").get(function () {
+//   return { name: `${this.name} `, role: this.role };
+// });
 
 const User = mongoose.model("User", userSchema);
 

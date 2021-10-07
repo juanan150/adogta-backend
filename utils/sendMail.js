@@ -4,12 +4,19 @@ const config = require("../config/index");
 
 sgMail.setApiKey(config.sendGrid);
 
-function sendMail({ to, from, subject, template_id }) {
+function sendMail({
+  to,
+  from = "Adogta <adogtatop@gmail.com>",
+  subject,
+  template_id,
+  dynamic_template_data = {},
+}) {
   const msg = {
     to,
     from,
     subject,
     template_id,
+    dynamic_template_data,
   };
 
   sgMail
@@ -17,7 +24,7 @@ function sendMail({ to, from, subject, template_id }) {
     .then(() => {
       console.log("Email sent");
     })
-    .catch((error) => {
+    .catch(error => {
       console.error(error);
     });
 }
