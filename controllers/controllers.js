@@ -35,7 +35,6 @@ const createUser = async (req, res, next) => {
       res.locals.user = user;
       next();
     }
-    const profile = newUser.profile;
 
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
 
@@ -56,7 +55,7 @@ const createUser = async (req, res, next) => {
       },
     });
 
-    res.status(201).json({ profile, token });
+    res.status(201).json({ token });
   } catch (err) {
     if (err.name === "ValidationError") {
       res.status(422).json(err.errors);
@@ -71,33 +70,23 @@ const verifiedEmail = async (req, res) => {
 
   try {
     const user = await User.findOne({ passwordResetToken: token });
-
+    console.log(user);
     if (!user) {
       return res.status(404).end();
     }
 
-    if (Date.now() <= user.passwordResetExpires) {
+    if (user) {
       user.passwordResetToken = null;
       user.passwordResetExpires = null;
       user.active = true;
       await user.save();
-
-      // Virtual prop
-      const profile = user.profile;
       const token = signToken(user._id);
 
-      return res.status(200).json({
-        profile,
-        token,
-      });
+      res.locals.user;
+      return res.status(200).json({ token, user });
     }
-    // token expired
-    return res.status(401).end();
   } catch (error) {
-    console.log(
-      "🚀 ~ file: user.controller.js ~ line 100 ~ verified ~ error",
-      error
-    );
+    // console.log(error);
     res.status(500).send(error);
   }
 };
