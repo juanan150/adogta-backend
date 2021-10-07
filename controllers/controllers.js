@@ -17,7 +17,12 @@ const subjectApproved = "Your Adogta adoption request was approved!";
 const templateRejected = "d-f3401c5e2f4e4cb985822e3a5fa6c42c";
 const subjectRejected = "Your Adogta adoption request was rejected";
 
-function sendEmail({ to, subject, template_id, dynamic_template_data = {} }) {
+function sendEmailRequest({
+  to,
+  subject,
+  template_id,
+  dynamic_template_data = {},
+}) {
   let urlDefault =
     "http://cdn.mcauto-images-production.sendgrid.net/ba88d9d99fb7fc5c/544f9777-b1b3-4380-9be7-ece6a50b2f83/600x600.png";
   const photoUrl = dynamic_template_data["photoUrl"];
@@ -322,7 +327,7 @@ const updateRequest = async (req, res, next) => {
       );
       let varPhoto = "";
       if (pet.photoUrl) varPhoto = pet.photoUrl[0];
-      sendEmail({
+      sendEmailRequest({
         template_id: templateApproved,
         dynamic_template_data: {
           name: pet.name,
@@ -334,7 +339,7 @@ const updateRequest = async (req, res, next) => {
     } else {
       let varPhoto = "";
       if (request["petId"].photoUrl) varPhoto = request["petId"].photoUrl[0];
-      sendEmail({
+      sendEmailRequest({
         template_id: templateRejected,
         dynamic_template_data: {
           name: request["petId"].name,
@@ -344,7 +349,13 @@ const updateRequest = async (req, res, next) => {
         subject: subjectRejected,
       });
     }
-    res.status(200).json({});
+    let { _id, userId, petId, description, responseStatus, updatedAt } =
+      request;
+    petId = request["petId"]._id;
+    userId = request["userId"]._id;
+    res
+      .status(200)
+      .json({ _id, userId, petId, description, responseStatus, updatedAt });
   } catch (e) {
     console.error(e);
     next(e);
@@ -375,8 +386,8 @@ const bulkReject = async (req, res, next) => {
     for (const adoption of request) {
       const userMail = adoption["userId"].email;
       let varPhoto = "";
-      if (!adoption["petId"].photoUrl) varPhoto = adoption["petId"].photoUrl[0];
-      sendEmail({
+      if (adoption["petId"].photoUrl) varPhoto = adoption["petId"].photoUrl[0];
+      sendEmailRequest({
         template_id: templateRejected,
         dynamic_template_data: {
           name: adoption["petId"].name,
