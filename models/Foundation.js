@@ -33,6 +33,11 @@ const foundationSchema = mongoose.Schema(
       type: String,
       required: [true, " Role is required"],
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    passwordResetToken: String,
     photoUrl: {
       type: String,
     },

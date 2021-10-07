@@ -9,10 +9,8 @@ const fs = require("fs");
 const crypto = require("crypto");
 const sendMail = require("../utils/sendMail");
 
-// await schemas[role]
-
 const createUser = async (req, res, next) => {
-  const { name, email, role } = req.body;
+  const { email, role } = req.body;
   try {
     const schema = {
       user: User,
@@ -27,24 +25,10 @@ const createUser = async (req, res, next) => {
       .update(newUser.email)
       .digest("hex");
     newUser.passwordResetToken = hash;
-    newUser.passwordResetExpires = Date.now() + 86400000; // 24 hour
 
     const user = await newUser.save();
-    // Virtual prop
-    if (user) {
-      res.locals.user = user;
-      next();
-    }
 
     const token = jwt.sign({ userId: user._id }, config.jwtKey);
-
-    // let newUser;
-    // if (req.body.role === "user" || req.body.role === "admin") {
-    //   newUser = await new User(req.body);
-    // } else {
-    //   newUser = await new Foundation(req.body);
-    // }
-    // await newUser.save();
 
     await sendMail({
       to: email,
@@ -68,25 +52,31 @@ const createUser = async (req, res, next) => {
 const verifiedEmail = async (req, res) => {
   const { token } = req.params;
 
+  const filter = { passwordResetToken: token };
+  const update = {
+    passwordResetToken: null,
+    active: true,
+  };
+
   try {
-    const user = await User.findOne({ passwordResetToken: token });
-    console.log(user);
+    let user = await User.findOneAndUpdate(filter, update);
+
+    let token;
+
+    if (user) {
+      token = jwt.sign({ userId: user._id }, config.jwtKey);
+    } else {
+      user = await Foundation.findOneAndUpdate(filter, update);
+      token = jwt.sign({ userId: user._id }, config.jwtKey);
+    }
+
     if (!user) {
       return res.status(404).end();
     }
 
-    if (user) {
-      user.passwordResetToken = null;
-      user.passwordResetExpires = null;
-      user.active = true;
-      await user.save();
-      const token = signToken(user._id);
-
-      res.locals.user;
-      return res.status(200).json({ token, user });
-    }
+    return res.status(200).json({ user, token });
   } catch (error) {
-    // console.log(error);
+    console.log("error:", error);
     res.status(500).send(error);
   }
 };
