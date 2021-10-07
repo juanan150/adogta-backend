@@ -6,39 +6,11 @@ const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
-const sgMail = require("@sendgrid/mail");
+const sendEmailRequest = require("../utils/sendEmailRequest");
+require("dotenv").config();
 
-sgMail.setApiKey(
-  "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"
-);
-
-const templateApproved = "d-aabfb5e90bd24e238229bfb254c04c05";
-const subjectApproved = "Your Adogta adoption request was approved!";
-const templateRejected = "d-f3401c5e2f4e4cb985822e3a5fa6c42c";
-const subjectRejected = "Your Adogta adoption request was rejected";
-
-function sendEmailRequest({
-  to,
-  subject,
-  template_id,
-  dynamic_template_data = {},
-}) {
-  let urlDefault =
-    "http://cdn.mcauto-images-production.sendgrid.net/ba88d9d99fb7fc5c/544f9777-b1b3-4380-9be7-ece6a50b2f83/600x600.png";
-  const photoUrl = dynamic_template_data["photoUrl"];
-  if (photoUrl !== "") {
-    urlDefault = photoUrl;
-  }
-  dynamic_template_data["photoUrl"] = urlDefault;
-  const msg = {
-    to, // Change to your recipient
-    from: "adogtatop@gmail.com", // Change to your verified sender
-    subject,
-    template_id,
-    dynamic_template_data,
-  };
-  sgMail.send(msg);
-}
+const templateApproved = config.templateApproved;
+const templateRejected = config.templateRejected;
 
 const createUser = async (req, res, next) => {
   try {
@@ -334,7 +306,6 @@ const updateRequest = async (req, res, next) => {
           photoUrl: varPhoto,
         },
         to: request["userId"].email,
-        subject: subjectApproved,
       });
     } else {
       let varPhoto = "";
@@ -346,7 +317,6 @@ const updateRequest = async (req, res, next) => {
           photoUrl: varPhoto,
         },
         to: request["userId"].email,
-        subject: subjectRejected,
       });
     }
     let { _id, userId, petId, description, responseStatus, updatedAt } =
@@ -394,7 +364,6 @@ const bulkReject = async (req, res, next) => {
           photoUrl: varPhoto,
         },
         to: userMail,
-        subject: subjectRejected,
       });
     }
     res.status(204).end();
