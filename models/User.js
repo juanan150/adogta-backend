@@ -66,13 +66,21 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.statics.authenticate = async (email, password) => {
-  const user = await User.findOne({ email });
-  if (user) {
-    const result = await bcrypt.compare(password, user.password);
-    return result === true ? user : null;
-  }
+  let user = await User.findOne({ email });
 
-  return null;
+  !user && (user = await mongoose.model("Foundation").findOne({ email }));
+
+  if (user && user.active === true) {
+    const result = await bcrypt.compare(password, user.password);
+    if (result) {
+      return user;
+    }
+    throw new Error("Invalid password");
+  } else if (user && user.active === false) {
+    throw new Error("Please verify your email");
+  } else {
+    throw new Error("User does not exist");
+  }
 };
 
 const User = mongoose.model("User", userSchema);

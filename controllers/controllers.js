@@ -42,7 +42,8 @@ const createUser = async (req, res, next) => {
     res.status(201).json({ token });
   } catch (err) {
     if (err.name === "ValidationError") {
-      res.status(422).json(err.errors);
+      console.log(err);
+      res.status(422).json({ error: "Email is already taken" });
     } else {
       next(err);
     }
@@ -127,41 +128,25 @@ const createRequest = async (req, res, next) => {
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  let user = await User.authenticate(email, password);
-
-  if (user && user.active === true) {
-    const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
-    res.json({
-      token,
-      _id,
-      name,
-      email,
-      role,
-      address,
-      phoneNumber,
-      photoUrl,
-    });
-  } else {
-    user = await Foundation.authenticate(email, password);
-    if (user && user.active === true) {
+  try {
+    const { email, password } = req.body;
+    let user = await User.authenticate(email, password);
+    if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
       const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
       res.json({
         token,
         _id,
-        email,
         name,
+        email,
         role,
         address,
         phoneNumber,
         photoUrl,
       });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
     }
+  } catch (error) {
+    res.status(401).json({ error: error.message });
   }
 };
 
