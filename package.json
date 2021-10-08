@@ -34,6 +34,6 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "testTimeout": 12000
+    "testTimeout": 15000
   }
 }

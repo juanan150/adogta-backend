@@ -173,19 +173,62 @@ const destroyPet = async (req, res, next) => {
 };
 
 const createPet = async (req, res, next) => {
+  let imagesFiles = req.files;
+  const { name, age, description } = req.body;
+
+  const data = {
+    name,
+    description,
+    age,
+    foundationId: req.params.foundationId,
+  };
+
   try {
-    data = {
-      name: req.body.name,
-      description: req.body.description,
-      photoUrl: req.body.photoUrl,
-      age: req.body.age,
-      foundationId: req.params.foundationId,
+    let arrayOfImagesFiles = {
+      photoUrl: [],
     };
-    const pet = new Pet(data);
-    await pet.save();
-    res.status(201).json(pet);
-  } catch (e) {
-    next(e);
+    if (!imagesFiles.photoUrl.length) {
+      arrayOfImagesFiles.photoUrl.push(imagesFiles.photoUrl);
+    } else {
+      arrayOfImagesFiles = {
+        ...imagesFiles,
+      };
+    }
+
+    let petPhotos = [];
+    for (let i = 0; i < arrayOfImagesFiles.photoUrl.length; i++) {
+      cloudinary.uploader.upload(
+        arrayOfImagesFiles.photoUrl[i].file,
+        async function (error, result) {
+          if (error) {
+            return next(error);
+          }
+          petPhotos.push(result.url);
+          dataPet = {
+            ...data,
+            photoUrl: [...petPhotos],
+          };
+          if (dataPet.photoUrl.length === arrayOfImagesFiles.photoUrl.length) {
+            const pet = new Pet(dataPet);
+            await pet.save();
+            res.status(201).json(pet);
+          }
+          fs.rm(
+            `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
+            { recursive: true },
+            err => {
+              if (err) {
+                return next(error);
+              }
+            }
+          );
+        }
+      );
+    }
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: "*Please fill in all the fields of the form" });
   }
 };
 
@@ -332,7 +375,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
