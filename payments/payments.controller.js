@@ -195,17 +195,17 @@ async function registeredGetTotalPayments(req, res) {
 }
 
 //se deja opcional para futuro
-async function unregisteredGetTotalPayments(req, res) {
+async function unregisteredGetTotalPayments(_, res) {
   try {
     const payments = await Payment.aggregate([
       {
         $match: {
-          epaycoCustomerId,
+          userId: !userId,
         },
       },
       {
         $group: {
-          _id: "$epaycoCustomerId",
+          _id: "$userId",
           total: { $sum: "$valor" },
         },
       },
@@ -230,5 +230,4 @@ module.exports = {
   unregisteredGetTotalPayments,
 };
 
-//1637d52f6460b17524a8803
-//1637ece9a5863477c67e6a5
+//Pendiente preguntar por que no me sirve pse
