@@ -36,11 +36,16 @@ async function createCard(req, res) {
 async function createCustomer(req, res) {
   const token = req.get("Authorization");
   let user;
+  let currentUser;
   if (token) {
     user = jwt.verify(token, config.jwtKey);
+    currentUser = await User.findById(user.userId);
   }
-  const currentUser = await User.findById(user.userId);
-  const customerInfo = { ...req.body, token_card: currentUser.token_card };
+
+  const customerInfo = {
+    ...req.body,
+    token_card: token ? currentUser.token_card : req.body.token_card,
+  };
   try {
     const customer = await epayco.customers.create(customerInfo);
     const {
@@ -86,15 +91,16 @@ async function deleteCustomer(req, res) {
 async function creditPayment(req, res) {
   const token = req.get("Authorization");
   let user;
+  let currentUser;
   if (token) {
     user = jwt.verify(token, config.jwtKey);
+    currentUser = await User.findById(user.userId);
   }
 
-  const currentUser = await User.findById(user.userId);
   const paymentInfo = {
     ...req.body,
-    customer_id: currentUser.epaycoCustomerId,
-    token_card: currentUser.token_card,
+    customer_id: token ? currentUser.epaycoCustomerId : req.body.customer_id,
+    token_card: token ? currentUser.token_card : req.body.token_card,
   };
 
   try {
@@ -223,3 +229,6 @@ module.exports = {
   registeredGetTotalPayments,
   unregisteredGetTotalPayments,
 };
+
+//1637d52f6460b17524a8803
+//1637ece9a5863477c67e6a5
