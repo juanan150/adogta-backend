@@ -11,6 +11,7 @@ const epayco = require("epayco-sdk-node")({
 const User = require("../models/User");
 const Payment = require("../models/payments");
 
+//Create Credit Card
 async function createCard(req, res) {
   const cardInfo = req.body;
   const token = req.get("Authorization");
@@ -25,13 +26,18 @@ async function createCard(req, res) {
       const filter = { _id: user.userId };
       const update = { token_card: token.id };
       await User.findOneAndUpdate(filter, update);
+      res.status(201).json({ token });
     }
-    res.status(201).json({ token });
+    res.status(500).send({
+      error: "Debe estar registrado para poder Realizar una donacion",
+    });
   } catch (error) {
     console.log("error", error);
     res.status(500).send(error.errors);
   }
 }
+
+//Create Customer
 
 async function createCustomer(req, res) {
   const token = req.get("Authorization");
@@ -41,6 +47,8 @@ async function createCustomer(req, res) {
     user = jwt.verify(token, config.jwtKey);
     currentUser = await User.findById(user.userId);
   }
+
+  //buscar el usuario si no crearlo
 
   const customerInfo = {
     ...req.body,
@@ -88,6 +96,7 @@ async function deleteCustomer(req, res) {
   }
 }
 
+//Credit Payment
 async function creditPayment(req, res) {
   const token = req.get("Authorization");
   let user;
@@ -102,9 +111,11 @@ async function creditPayment(req, res) {
     customer_id: token ? currentUser.epaycoCustomerId : req.body.customer_id,
     token_card: token ? currentUser.token_card : req.body.token_card,
   };
+  console.log(paymentInfo);
 
   try {
     const { data: data } = await epayco.charge.create(paymentInfo);
+    console.log(data);
 
     if (user) {
       const newPayment = new Payment({
@@ -134,32 +145,82 @@ async function creditPayment(req, res) {
   }
 }
 
-async function pseBanks(_, res) {
-  try {
-    const listBanks = await epayco.bank.getBanks();
-    res.status(201).json({ listBanks });
-  } catch (error) {
-    console.log("error", error);
-    res.status(500).send(error.errors);
-  }
-}
+//PSE
 
-async function createPsePayment(req, res) {
-  const pseInfo = req.body;
+// async function pseBanks(_, res) {
+//   try {
+//     const listBanks = await epayco.bank.getBanks();
+//     res.status(201).json({ listBanks });
+//   } catch (error) {
+//     console.log("error", error);
+//     res.status(500).send(error.errors);
+//   }
+// }
+
+// async function createPsePayment(req, res) {
+//   const pseInfo = req.body;
+//   try {
+//     const payment = await epayco.bank.create(pseInfo);
+//     res.status(201).json({ payment });
+//   } catch (error) {
+//     console.log("error", error);
+//     res.status(500).send(error.errors);
+//   }
+// }
+
+// async function pseTicket(req, res) {
+//   const ticketId = req.body;
+//   try {
+//     const ticketInfo = await epayco.bank.get(ticketId);
+//     res.status(201).json({ ticketInfo });
+//   } catch (error) {
+//     console.log("error", error);
+//     res.status(500).send(error.errors);
+//   }
+// }
+
+//Cash
+
+async function cashPayment(req, res) {
+  // const token = req.get("Authorization");
+  // let user;
+  // let currentUser;
+  // if (token) {
+  //   user = jwt.verify(token, config.jwtKey);
+  //   currentUser = await User.findById(user.userId);
+  // }
+
+  const cashInfo = req.body;
+  console.log(cashInfo);
+  // let establishment = cashInfo.establishment;
+  // console.log(establishment);
+
   try {
-    const payment = await epayco.bank.create(pseInfo);
+    const payment = await epayco.cash.create("efecty", cashInfo);
     res.status(201).json({ payment });
-  } catch (error) {
-    console.log("error", error);
-    res.status(500).send(error.errors);
-  }
-}
 
-async function pseTicket(req, res) {
-  const ticketId = req.body;
-  try {
-    const ticketInfo = await epayco.bank.get(ticketId);
-    res.status(201).json({ ticketInfo });
+    // if (user) {
+    //   const newPayment = new Payment({
+    //     ...data,
+    //     userId: user.userId,
+    //     epaycoCustomerId: user
+    //       ? currentUser.epaycoCustomerId
+    //       : req.body.customer_id,
+    //   });
+    //   const payment = await newPayment.save();
+
+    //   res.status(201).json({ payment });
+    // } else {
+    //   const newPayment = new Payment({
+    //     ...data,
+    //     epaycoCustomerId: user
+    //       ? currentUser.epaycoCustomerId
+    //       : req.body.customer_id,
+    //   });
+    //   const payment = await newPayment.save();
+
+    //   res.status(201).json({ payment });
+    // }
   } catch (error) {
     console.log("error", error);
     res.status(500).send(error.errors);
@@ -223,11 +284,9 @@ module.exports = {
   deleteCustomer,
   listCustomers,
   creditPayment,
-  pseBanks,
-  createPsePayment,
-  pseTicket,
   registeredGetTotalPayments,
   unregisteredGetTotalPayments,
+  cashPayment,
 };
 
 //Pendiente preguntar por que no me sirve pse

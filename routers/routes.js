@@ -29,9 +29,9 @@ app.post("/donate/create-customer", paymentController.createCustomer);
 app.get("/donate/list", auth, paymentController.listCustomers);
 app.post("/donate/delete", auth, paymentController.deleteCustomer);
 app.post("/donate/credit-payment", paymentController.creditPayment);
-app.get("/donate/pse-list", paymentController.pseBanks);
-app.post("/donate/pse-payment", paymentController.createPsePayment);
-app.post("/donate/pse-ticket", paymentController.pseTicket);
+// app.get("/donate/pse-list", paymentController.pseBanks);
+// app.post("/donate/pse-payment", paymentController.createPsePayment);
+// app.post("/donate/pse-ticket", paymentController.pseTicket);
 app.get(
   "/donate/registered-total-payments",
   auth,
@@ -42,6 +42,7 @@ app.get(
   auth,
   paymentController.unregisteredGetTotalPayments
 );
+app.post("/donate/cash", paymentController.cashPayment);
 
 module.exports = app;
 
