@@ -11,6 +11,7 @@ afterAll(() => {
 });
 
 let userId, token;
+const file = "__tests__/img/mug.png";
 //foundationt
 userId = "6140fb165b1d5ee0c2a4621d";
 token = jwt.sign({ userId: userId }, config.jwtKey);
@@ -45,12 +46,11 @@ describe("POST /foundations/:foundationId/pets", () => {
   test("responds 201 after adding a pet", async () => {
     const response = await request(app)
       .post(`/foundations/${userId}/pets`)
-      .send({
-        name: "Test Pet",
-        description: "test pet",
-        photoUrl: ["http://dummyimage.com/119x100.png/cc0000/ffffff"],
-        age: 10,
-      });
+      .attach("photoUrl", file)
+      .field("name", "Test pet")
+      .field("description", "test pet")
+      .field("age", 10);
+
     _id = response.body._id;
     expect(response.statusCode).toBe(201);
   });
@@ -58,12 +58,10 @@ describe("POST /foundations/:foundationId/pets", () => {
   test("returns pet with _id", async () => {
     const response = await request(app)
       .post(`/foundations/${userId}/pets`)
-      .send({
-        name: "Test Pet",
-        description: "test pet",
-        photoUrl: ["http://dummyimage.com/119x100.png/cc0000/ffffff"],
-        age: 10,
-      });
+      .attach("photoUrl", file)
+      .field("name", "Test pet")
+      .field("description", "test pet")
+      .field("age", 10);
     _id = response.body._id;
     expect(response.body._id).not.toBeFalsy();
   });
@@ -75,12 +73,10 @@ describe("DELETE /pets/:petId", () => {
   beforeEach(async () => {
     const response = await request(app)
       .post(`/foundations/${userId2}/pets`)
-      .send({
-        name: "Test Pet",
-        description: "test pet",
-        photoUrl: ["http://dummyimage.com/119x100.png/cc0000/ffffff"],
-        age: 10,
-      });
+      .attach("photoUrl", file)
+      .field("name", "Test pet")
+      .field("description", "test pet")
+      .field("age", 10);
     _id = response.body._id;
   });
 

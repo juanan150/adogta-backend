@@ -11,6 +11,7 @@ require("dotenv").config();
 
 const templateApproved = config.templateApproved;
 const templateRejected = config.templateRejected;
+const sendMail = require("../utils/sendMail");
 
 const createUser = async (req, res, next) => {
   try {
@@ -21,6 +22,7 @@ const createUser = async (req, res, next) => {
       newUser = await new Foundation(req.body);
     }
     await newUser.save();
+
     res.status(201).json(newUser);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -33,7 +35,7 @@ const createUser = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
   try {
-    const { _id } = res.locals.user;
+    const { _id, email, name } = res.locals.user;
 
     const sameAdoptions = await AdoptionRequest.find({
       userId: _id,
@@ -58,6 +60,14 @@ const createRequest = async (req, res, next) => {
           address: req.body.address,
         }
       );
+
+      await sendMail({
+        to: email,
+        from: "Adogta <adogtatop@gmail.com>",
+        subject: `${name}, We have received an adoption request from you!`,
+        template_id: config.senGridTemplateId,
+      });
+
       res.status(200).json({ request });
     }
   } catch (err) {
@@ -168,19 +178,62 @@ const destroyPet = async (req, res, next) => {
 };
 
 const createPet = async (req, res, next) => {
+  let imagesFiles = req.files;
+  const { name, age, description } = req.body;
+
+  const data = {
+    name,
+    description,
+    age,
+    foundationId: req.params.foundationId,
+  };
+
   try {
-    data = {
-      name: req.body.name,
-      description: req.body.description,
-      photoUrl: req.body.photoUrl,
-      age: req.body.age,
-      foundationId: req.params.foundationId,
+    let arrayOfImagesFiles = {
+      photoUrl: [],
     };
-    const pet = new Pet(data);
-    await pet.save();
-    res.status(201).json(pet);
-  } catch (e) {
-    next(e);
+    if (!imagesFiles.photoUrl.length) {
+      arrayOfImagesFiles.photoUrl.push(imagesFiles.photoUrl);
+    } else {
+      arrayOfImagesFiles = {
+        ...imagesFiles,
+      };
+    }
+
+    let petPhotos = [];
+    for (let i = 0; i < arrayOfImagesFiles.photoUrl.length; i++) {
+      cloudinary.uploader.upload(
+        arrayOfImagesFiles.photoUrl[i].file,
+        async function (error, result) {
+          if (error) {
+            return next(error);
+          }
+          petPhotos.push(result.url);
+          dataPet = {
+            ...data,
+            photoUrl: [...petPhotos],
+          };
+          if (dataPet.photoUrl.length === arrayOfImagesFiles.photoUrl.length) {
+            const pet = new Pet(dataPet);
+            await pet.save();
+            res.status(201).json(pet);
+          }
+          fs.rm(
+            `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
+            { recursive: true },
+            (err) => {
+              if (err) {
+                return next(error);
+              }
+            }
+          );
+        }
+      );
+    }
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: "*Please fill in all the fields of the form" });
   }
 };
 
@@ -397,6 +450,19 @@ const deleteUsers = async (req, res, next) => {
   }
 };
 
+const listUserRequests = async (req, res, next) => {
+  try {
+    response = await AdoptionRequest.find({
+      userId: req.params.userId,
+    }).populate({
+      path: "petId",
+      model: Pet,
+    });
+    res.status(200).json(response);
+  } catch (e) {
+    next(e);
+  }
+};
 const adminSearch = async (req, res, next) => {
   try {
     let toSearch = {};
@@ -448,5 +514,6 @@ module.exports = {
   deleteUsers,
   bulkReject,
   createRequest,
+  listUserRequests,
   adminSearch,
 };

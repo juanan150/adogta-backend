@@ -34,6 +34,9 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "testTimeout": 10000
+    "testTimeout": 25000
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }
