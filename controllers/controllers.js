@@ -63,9 +63,10 @@ const createRequest = async (req, res, next) => {
 
       await sendMail({
         to: email,
-        from: "Adogta <adogtatop@gmail.com>",
-        subject: `${name}, We have received an adoption request from you!`,
         template_id: config.senGridTemplateId,
+        dynamic_template_data: {
+          name: name,
+        },
       });
 
       res.status(200).json({ request });

@@ -8,6 +8,7 @@ const config = {
   senGridTemplateId: process.env.SENGRID_TEMPLATE_ID,
   templateApproved: process.env.SENDGRID_TEMPLATE_ACCEPTED,
   templateRejected: process.env.SENDGRID_TEMPLATE_REJECTED,
+  senGridDonation: process.env.SENGRID_TEMPLATE_DONATION,
   epaycoApiKey: process.env.EPAYCO_PUBLIC_KEY,
   epaycoPrivateKey: process.env.EPAYCO_PRIVATE_KEY,
 };

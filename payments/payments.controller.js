@@ -1,5 +1,5 @@
 const config = require("../config/index");
-
+const sendMail = require("../utils/sendMail");
 const epayco = require("epayco-sdk-node")({
   apiKey: config.epaycoApiKey,
   privateKey: config.epaycoPrivateKey,
@@ -57,6 +57,14 @@ async function epaycoPayment(req, res) {
       epaycoCustomerId: userId,
     });
     await newPayment.save();
+
+    await sendMail({
+      to: user.email,
+      template_id: config.senGridDonation,
+      dynamic_template_data: {
+        name: user.name,
+      },
+    });
 
     res.status(201).json({ data });
   } catch (error) {
