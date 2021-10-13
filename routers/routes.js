@@ -16,7 +16,7 @@ app.get("/pets/:petId", auth, controllers.getPet);
 app.get("/pets/:petId/requests", auth, controllers.listRequests);
 app.put("/pets/:petId/requests/", auth, controllers.bulkReject);
 app.put("/pets/:petId/requests/:requestId", auth, controllers.updateRequest);
-app.get("/admin", authAdmin, controllers.listFoundations);
+app.get("/admin", authAdmin, controllers.listFoundationsAdmin);
 app.delete("/admin", authAdmin, controllers.deleteFoundation);
 app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);

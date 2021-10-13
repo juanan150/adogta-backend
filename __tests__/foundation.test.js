@@ -30,17 +30,22 @@ describe("GET /foundations", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  test("responds with first 5 foundations", async () => {
+  test("responds with first 10 foundations", async () => {
     const response = await request(app)
       .get("/foundations")
       .set("Authorization", token);
-    expect(response.body.length).toBe(5);
+    expect(response.body.length).toBe(10);
     const listId = [
       "613a2c7cfd818ebfd9e05029",
       "613a5c5e382eee3ccac5bad0",
       "613a749c7c6c0998970eab95",
       "613a86e210ed01add3e4f2ae",
       "613a9b7abd9f8c8d00f6a612",
+      "613fecc4e485559caa864add",
+      "6148bc75b544bc9daace08c7",
+      "614a4c2e05445cc353d5eb59",
+      "614e589713138182536c94ab",
+      "6167063ebbc25048924f81c1",
     ];
     for (let i = 0; i < 5; i++) {
       expect(response.body[i]._id === listId[i]);

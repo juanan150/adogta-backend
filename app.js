@@ -17,7 +17,6 @@ bb.extend(app, {
 });
 
 app.use(routes);
-
 process.env.NODE_ENV === "test"
   ? mongoose.connect(
       config.dbConnectionStringTest,
