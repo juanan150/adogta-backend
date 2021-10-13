@@ -109,7 +109,7 @@ const login = async (req, res) => {
   }
 };
 
-const listFoundations = async (req, res, next) => {
+const listFoundationsAdmin = async (req, res, next) => {
   try {
     const page = req.query.page || 1;
     const foundations = await Foundation.find(
@@ -118,6 +118,25 @@ const listFoundations = async (req, res, next) => {
       {
         skip: (page - 1) * 5,
         limit: 5,
+      }
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
+    res.status(200).json(foundations);
+  } catch (e) {
+    return next(e);
+  }
+};
+
+const listFoundations = async (req, res, next) => {
+  try {
+    const page = req.query.page || 1;
+    const foundations = await Foundation.find(
+      {},
+      { password: 0, __v: 0, role: 0 },
+      {
+        skip: (page - 1) * 10,
+        limit: 10,
       }
     )
       .collation({ locale: "en" })
@@ -516,4 +535,5 @@ module.exports = {
   createRequest,
   listUserRequests,
   adminSearch,
+  listFoundationsAdmin,
 };
