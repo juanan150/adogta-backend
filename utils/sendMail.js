@@ -4,12 +4,19 @@ const config = require("../config/index");
 
 sgMail.setApiKey(config.sendGrid);
 
-function sendMail({ to, from, subject, template_id }) {
+function sendMail({
+  to,
+  from,
+  subject,
+  template_id,
+  dynamic_template_data = {},
+}) {
   const msg = {
     to,
     from,
     subject,
     template_id,
+    dynamic_template_data,
   };
 
   sgMail
