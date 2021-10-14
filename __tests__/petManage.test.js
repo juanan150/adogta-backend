@@ -11,7 +11,7 @@ afterAll(() => {
 
 let userId, token, petId;
 //foundationt
-userId = "6140fb165b1d5ee0c2a4621d";
+userId = "6138fc6caaafd83875c55886";
 //pet coco3
 petId = "6143e2a60d4bc9d25fb9e929";
 
