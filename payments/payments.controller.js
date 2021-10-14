@@ -55,6 +55,7 @@ async function epaycoPayment(req, res) {
       ...data,
       userId: user._id,
       epaycoCustomerId: userId,
+      foundationId: req.body.foundationId,
     });
     await newPayment.save();
 

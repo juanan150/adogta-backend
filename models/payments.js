@@ -10,6 +10,10 @@ const PaymentSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    foundationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: "Foundation",
+    },
     ref_payco: {
       type: String,
       unique: true,
