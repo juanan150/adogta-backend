@@ -1,5 +1,6 @@
 const express = require("express");
 const controllers = require("../controllers/controllers");
+const paymentController = require("../payments/payments.controller");
 const { auth, authAdmin } = require("../middlewares/middlewares");
 const app = express.Router();
 
@@ -15,7 +16,7 @@ app.get("/pets/:petId", auth, controllers.getPet);
 app.get("/pets/:petId/requests", auth, controllers.listRequests);
 app.put("/pets/:petId/requests/", auth, controllers.bulkReject);
 app.put("/pets/:petId/requests/:requestId", auth, controllers.updateRequest);
-app.get("/admin", authAdmin, controllers.listFoundations);
+app.get("/admin", authAdmin, controllers.listFoundationsAdmin);
 app.delete("/admin", authAdmin, controllers.deleteFoundation);
 app.get("/admin/users", authAdmin, controllers.listUsers);
 app.delete("/admin/users", authAdmin, controllers.deleteUsers);
@@ -24,5 +25,6 @@ app.post("/pets/:petId/request", auth, controllers.createRequest);
 app.get("/:userId/requests", auth, controllers.listUserRequests);
 app.post("/adminSearch", authAdmin, controllers.adminSearch);
 app.get("/verified/:token", controllers.verifiedEmail);
+app.post("/donate/payment", auth, paymentController.epaycoPayment);
 
 module.exports = app;

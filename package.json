@@ -17,6 +17,7 @@
     "cloudinary": "^1.27.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "epayco-sdk-node": "^1.0.8",
     "express": "^4.17.1",
     "express-busboy": "^8.0.0",
     "fs": "^0.0.1-security",
@@ -34,6 +35,9 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "testTimeout": 15000
+    "testTimeout": 25000
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }

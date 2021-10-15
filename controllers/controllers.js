@@ -7,6 +7,11 @@ const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const crypto = require("crypto");
+const sendEmailRequest = require("../utils/sendEmailRequest");
+require("dotenv").config();
+
+const templateApproved = config.templateApproved;
+const templateRejected = config.templateRejected;
 const sendMail = require("../utils/sendMail");
 
 const createUser = async (req, res, next) => {
@@ -111,9 +116,10 @@ const createRequest = async (req, res, next) => {
 
       await sendMail({
         to: email,
-        from: "Adogta <adogtatop@gmail.com>",
-        subject: `${name}, We have received an adoption request from you!`,
         template_id: config.senGridTemplateId,
+        dynamic_template_data: {
+          name: name,
+        },
       });
 
       res.status(200).json({ request });
@@ -150,7 +156,7 @@ const login = async (req, res) => {
   }
 };
 
-const listFoundations = async (req, res, next) => {
+const listFoundationsAdmin = async (req, res, next) => {
   try {
     const page = req.query.page || 1;
     const foundations = await Foundation.find(
@@ -159,6 +165,25 @@ const listFoundations = async (req, res, next) => {
       {
         skip: (page - 1) * 5,
         limit: 5,
+      }
+    )
+      .collation({ locale: "en" })
+      .sort({ name: 1 });
+    res.status(200).json(foundations);
+  } catch (e) {
+    return next(e);
+  }
+};
+
+const listFoundations = async (req, res, next) => {
+  try {
+    const page = req.query.page || 1;
+    const foundations = await Foundation.find(
+      {},
+      { password: 0, __v: 0, role: 0 },
+      {
+        skip: (page - 1) * 10,
+        limit: 10,
       }
     )
       .collation({ locale: "en" })
@@ -262,7 +287,7 @@ const createPet = async (req, res, next) => {
           fs.rm(
             `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
             { recursive: true },
-            err => {
+            (err) => {
               if (err) {
                 return next(error);
               }
@@ -379,9 +404,11 @@ const updateRequest = async (req, res, next) => {
         responseStatus: req.body.responseStatus,
       },
       { new: true }
-    );
+    )
+      .populate("userId")
+      .populate("petId");
     if (req.body.responseStatus === "approved") {
-      await Pet.findOneAndUpdate(
+      const pet = await Pet.findOneAndUpdate(
         {
           _id: request.petId,
         },
@@ -389,16 +416,44 @@ const updateRequest = async (req, res, next) => {
           adopted: true,
         }
       );
+      let varPhoto = "";
+      if (pet.photoUrl) varPhoto = pet.photoUrl[0];
+      sendEmailRequest({
+        template_id: templateApproved,
+        dynamic_template_data: {
+          name: pet.name,
+          photoUrl: varPhoto,
+        },
+        to: request["userId"].email,
+      });
+    } else {
+      let varPhoto = "";
+      if (request["petId"].photoUrl) varPhoto = request["petId"].photoUrl[0];
+      sendEmailRequest({
+        template_id: templateRejected,
+        dynamic_template_data: {
+          name: request["petId"].name,
+          photoUrl: varPhoto,
+        },
+        to: request["userId"].email,
+      });
     }
-    res.status(200).json(request);
+    let { _id, userId, petId, description, responseStatus, updatedAt } =
+      request;
+    petId = request["petId"]._id;
+    userId = request["userId"]._id;
+    res
+      .status(200)
+      .json({ _id, userId, petId, description, responseStatus, updatedAt });
   } catch (e) {
+    console.error(e);
     next(e);
   }
 };
 
 const bulkReject = async (req, res, next) => {
   try {
-    const request = await AdoptionRequest.updateMany(
+    await AdoptionRequest.updateMany(
       {
         petId: req.params.petId,
         _id: { $ne: req.body._id },
@@ -408,8 +463,31 @@ const bulkReject = async (req, res, next) => {
       },
       { new: true }
     );
+
+    // There is no method to update multiple documents and return all updated documents in mongoose.
+    const request = await AdoptionRequest.find({
+      petId: req.params.petId,
+      _id: { $ne: req.body._id },
+    })
+      .populate("userId")
+      .populate("petId");
+
+    for (const adoption of request) {
+      const userMail = adoption["userId"].email;
+      let varPhoto = "";
+      if (adoption["petId"].photoUrl) varPhoto = adoption["petId"].photoUrl[0];
+      sendEmailRequest({
+        template_id: templateRejected,
+        dynamic_template_data: {
+          name: adoption["petId"].name,
+          photoUrl: varPhoto,
+        },
+        to: userMail,
+      });
+    }
     res.status(204).end();
   } catch (e) {
+    console.error(e);
     next(e);
   }
 };
@@ -421,7 +499,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      request => request.petId.foundationId.toString() === req.params.id
+      (request) => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -457,6 +535,7 @@ const adminSearch = async (req, res, next) => {
     toSearch[req.body.field] = req.body.value;
     const page = req.query.page || 1;
 
+    // _id needs to have length 24 to be valid
     if (req.body.field === "_id" && req.body.value.length !== 24) {
       res.status(200).json([]);
       return;
@@ -478,7 +557,7 @@ const adminSearch = async (req, res, next) => {
       res.status(200).json(foundation);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     next(e);
   }
 };
@@ -503,5 +582,9 @@ module.exports = {
   createRequest,
   listUserRequests,
   adminSearch,
+<<<<<<< HEAD
   verifiedEmail,
+=======
+  listFoundationsAdmin,
+>>>>>>> 2d7dc45a9d2f9d519976d9bde41dcdbafdc0164a
 };
