@@ -1,5 +1,6 @@
 const express = require("express");
 const controllers = require("../controllers/controllers");
+const paymentController = require("../payments/payments.controller");
 const { auth, authAdmin } = require("../middlewares/middlewares");
 const app = express.Router();
 
@@ -23,5 +24,6 @@ app.post("/signup", controllers.createUser);
 app.post("/pets/:petId/request", auth, controllers.createRequest);
 app.get("/:userId/requests", auth, controllers.listUserRequests);
 app.post("/adminSearch", authAdmin, controllers.adminSearch);
+app.post("/donate/payment", auth, paymentController.epaycoPayment);
 
 module.exports = app;
