@@ -287,7 +287,7 @@ const createPet = async (req, res, next) => {
           fs.rm(
             `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
             { recursive: true },
-            (err) => {
+            err => {
               if (err) {
                 return next(error);
               }
@@ -499,7 +499,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -582,9 +582,6 @@ module.exports = {
   createRequest,
   listUserRequests,
   adminSearch,
-<<<<<<< HEAD
   verifiedEmail,
-=======
   listFoundationsAdmin,
->>>>>>> 2d7dc45a9d2f9d519976d9bde41dcdbafdc0164a
 };
