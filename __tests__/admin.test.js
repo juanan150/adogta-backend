@@ -12,6 +12,8 @@ afterAll(() => {
 
 let id_foundation, token_login, id_account;
 beforeAll(async () => {
+  await Foundation.deleteOne({email: "test123@124.com"})
+  await User.deleteOne({email: "test123@124.com"})
   const foundation = await Foundation.create({
     email: "test123@124.com",
     password: "bruteForce123",
