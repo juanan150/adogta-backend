@@ -24,6 +24,7 @@ app.post("/signup", controllers.createUser);
 app.post("/pets/:petId/request", auth, controllers.createRequest);
 app.get("/:userId/requests", auth, controllers.listUserRequests);
 app.post("/adminSearch", authAdmin, controllers.adminSearch);
+app.get("/verified/:token", controllers.verifiedEmail);
 app.post("/donate/payment", auth, paymentController.epaycoPayment);
 
 module.exports = app;

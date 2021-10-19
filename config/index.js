@@ -5,6 +5,8 @@ const config = {
   jwtKey: process.env.JWT_KEY,
   sendGrid: process.env.SENDGRID_API_KEY,
   senGridTemplateId: process.env.SENGRID_TEMPLATE_ID,
+  senGridTemplateEmailVerification:
+    process.env.SENGRID_TEMPLATE_EMAIL_VERIFICATION,
   templateApproved: process.env.SENDGRID_TEMPLATE_ACCEPTED,
   templateRejected: process.env.SENDGRID_TEMPLATE_REJECTED,
   senGridDonation: process.env.SENGRID_TEMPLATE_DONATION,

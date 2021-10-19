@@ -6,6 +6,7 @@ const Pet = require("../models/Pet");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+const crypto = require("crypto");
 const sendEmailRequest = require("../utils/sendEmailRequest");
 require("dotenv").config();
 
@@ -14,22 +15,74 @@ const templateRejected = config.templateRejected;
 const sendMail = require("../utils/sendMail");
 
 const createUser = async (req, res, next) => {
+  const { email, role } = req.body;
   try {
-    let newUser;
-    if (req.body.role === "user" || req.body.role === "admin") {
-      newUser = await new User(req.body);
-    } else {
-      newUser = await new Foundation(req.body);
-    }
-    await newUser.save();
+    const schema = {
+      user: User,
+      admin: User,
+      foundation: Foundation,
+    };
 
-    res.status(201).json(newUser);
+    const newUser = await new schema[role](req.body);
+
+    const hash = crypto
+      .createHash("sha256")
+      .update(newUser.email)
+      .digest("hex");
+    newUser.passwordResetToken = hash;
+
+    const user = await newUser.save();
+
+    const token = jwt.sign({ userId: user._id }, config.jwtKey);
+
+    await sendMail({
+      to: email,
+      template_id: config.senGridTemplateEmailVerification,
+      dynamic_template_data: {
+        name: newUser.name,
+        url: `http://localhost:3000/verified/${hash}`,
+      },
+    });
+
+    res.status(201).json({ token });
   } catch (err) {
     if (err.name === "ValidationError") {
-      res.status(422).json(err.errors);
+      console.log(err);
+      res.status(422).json({ error: "Email is already taken" });
     } else {
       next(err);
     }
+  }
+};
+
+const verifiedEmail = async (req, res) => {
+  const { token } = req.params;
+
+  const filter = { passwordResetToken: token };
+  const update = {
+    passwordResetToken: null,
+    active: true,
+  };
+
+  try {
+    let user = await User.findOneAndUpdate(filter, update);
+
+    let token;
+
+    if (user) {
+      token = jwt.sign({ userId: user._id }, config.jwtKey);
+    } else {
+      user = await Foundation.findOneAndUpdate(filter, update);
+      token = jwt.sign({ userId: user._id }, config.jwtKey);
+    }
+
+    if (!user) {
+      return res.status(404).end();
+    }
+
+    return res.status(200).json({ user, token });
+  } catch (error) {
+    res.status(500).send(error);
   }
 };
 
@@ -81,32 +134,25 @@ const createRequest = async (req, res, next) => {
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  let user = await User.authenticate(email, password);
-
-  if (user) {
-    const token = jwt.sign({ userId: user._id }, config.jwtKey);
-    const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
-    res.json({ token, _id, name, email, role, address, phoneNumber, photoUrl });
-  } else {
-    user = await Foundation.authenticate(email, password);
+  try {
+    const { email, password } = req.body;
+    let user = await User.authenticate(email, password);
     if (user) {
       const token = jwt.sign({ userId: user._id }, config.jwtKey);
       const { _id, name, email, role, address, phoneNumber, photoUrl } = user;
       res.json({
         token,
         _id,
-        email,
         name,
+        email,
         role,
         address,
         phoneNumber,
         photoUrl,
       });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
     }
+  } catch (error) {
+    res.status(401).json({ error: error.message });
   }
 };
 
@@ -241,7 +287,7 @@ const createPet = async (req, res, next) => {
           fs.rm(
             `uploads/${arrayOfImagesFiles.photoUrl[i].uuid}`,
             { recursive: true },
-            (err) => {
+            err => {
               if (err) {
                 return next(error);
               }
@@ -277,7 +323,7 @@ const updateProfile = async (req, res, next) => {
           if (error) {
             return next(error);
           }
-          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, (err) => {
+          fs.rm(`uploads/${imageFile.uuid}`, { recursive: true }, err => {
             if (err) {
               return next(error);
             }
@@ -453,7 +499,7 @@ const listFoundationRequests = async (req, res, next) => {
       model: Pet,
     });
     const reqs = response.filter(
-      (request) => request.petId.foundationId.toString() === req.params.id
+      request => request.petId.foundationId.toString() === req.params.id
     );
     res.status(200).json(reqs);
   } catch (e) {
@@ -536,5 +582,6 @@ module.exports = {
   createRequest,
   listUserRequests,
   adminSearch,
+  verifiedEmail,
   listFoundationsAdmin,
 };

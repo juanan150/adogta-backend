@@ -6,7 +6,7 @@ sgMail.setApiKey(config.sendGrid);
 
 function sendMail({
   to,
-  from,
+  from = "Adogta <adogtatop@gmail.com>",
   subject,
   template_id,
   dynamic_template_data = {},
@@ -24,7 +24,7 @@ function sendMail({
     .then(() => {
       console.log("Email sent");
     })
-    .catch((error) => {
+    .catch(error => {
       console.error(error);
     });
 }

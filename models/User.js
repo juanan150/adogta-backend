@@ -10,9 +10,17 @@ const userSchema = mongoose.Schema(
       validate: {
         validator: async function (value) {
           const user = await User.findOne({ email: value });
-          return user === null;
+          const foundation = await mongoose
+            .model("Foundation")
+            .findOne({ email: value });
+          if (user) {
+            return user === null;
+          } else if (user === foundation) {
+            return user === null;
+          }
+          return user;
         },
-        message: "Email is already taken ",
+        message: "Email is already taken",
       },
     },
     password: {
@@ -33,6 +41,11 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, " Role is required"],
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    passwordResetToken: String,
     photoUrl: {
       type: String,
     },
@@ -59,13 +72,21 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.statics.authenticate = async (email, password) => {
-  const user = await User.findOne({ email });
-  if (user) {
-    const result = await bcrypt.compare(password, user.password);
-    return result === true ? user : null;
-  }
+  let user = await User.findOne({ email });
 
-  return null;
+  !user && (user = await mongoose.model("Foundation").findOne({ email }));
+
+  if (user && user.active === true) {
+    const result = await bcrypt.compare(password, user.password);
+    if (result) {
+      return user;
+    }
+    throw new Error("Invalid password");
+  } else if (user && user.active === false) {
+    throw new Error("Please verify your email");
+  } else {
+    throw new Error("User does not exist");
+  }
 };
 
 const User = mongoose.model("User", userSchema);
