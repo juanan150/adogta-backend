@@ -40,7 +40,7 @@ const createUser = async (req, res, next) => {
       template_id: config.senGridTemplateEmailVerification,
       dynamic_template_data: {
         name: newUser.name,
-        url: `http://localhost:3000/verified/${hash}`,
+        url: `${config.adogtaPublicUrl}/verified/${hash}`,
       },
     });
 
