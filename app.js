@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bb = require("express-busboy");
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
@@ -8,8 +9,14 @@ const routes = require("./routers/routes");
 
 app.use(cors());
 app.use(express.json());
-app.use(routes);
+bb.extend(app, {
+  upload: true,
+  path: "uploads",
+  allowedPath: /./,
+  mimeTypeLimit: ["image/jpeg", "image/png"],
+});
 
+app.use(routes);
 process.env.NODE_ENV === "test"
   ? mongoose.connect(
       config.dbConnectionStringTest,

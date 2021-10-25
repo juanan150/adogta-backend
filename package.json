@@ -12,10 +12,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.4.7",
     "bcrypt": "^5.0.1",
+    "cloudinary": "^1.27.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "epayco-sdk-node": "^1.0.8",
     "express": "^4.17.1",
+    "express-busboy": "^8.0.0",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.5",
     "nodemon": "^2.0.12",
@@ -23,6 +28,7 @@
     "swagger-ui-express": "^4.1.6"
   },
   "devDependencies": {
+    "faker": "^5.5.3",
     "jest": "^27.2.1",
     "supertest": "^6.1.6"
   },
@@ -31,6 +37,9 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "testTimeout": 10000
+    "testTimeout": 25000
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }
